@@ -17,6 +17,7 @@ import logger
 import dataset
 from functions import chk
 from sklearn.metrics import confusion_matrix
+import seaborn as sns
 plt.switch_backend("agg")
 
 def parse_cmd_line_arguments():
@@ -91,27 +92,27 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
             c = (predicted == labels)
             for n in range(len(labels)):
                 cm += confusion_matrix(labels[n][0], predicted[n][0], [i for i in range(num_classes)])
-            # for i in range(len(labels)):
-                # for j in range(labels.size(2)):
-                    # label = labels[i, :, j]
-                    # class_correct[label] += c[i, :, j].item()
-                    # class_total[label] += 1
+
     accuracy = np.diag(cm) / np.sum(cm, axis=1)
     total_accuracy = np.sum(np.diag(cm)) / np.sum(cm)
     precision = np.diag(cm) / np.sum(cm, axis=0)
     f_score = (2 * accuracy * precision) / (accuracy + precision)
+    cm_label = ['No Call', 'Call']
+    fig = plt.figure(figsize=(10, 10))
+    plt.rcParams["font.size"] = 15
+    sns.heatmap(cm, annot=True, cmap='GnBu', xticklabels=cm_label, yticklabels=cm_label, fmt='.10g', square=True, annot_kws={'size':30})
+    plt.ylim(0, cm.shape[0])
+    plt.xlabel('Estimated Label')
+    plt.ylabel('Ground Truth Label')
+    plt.tight_layout()
+    plt.show()
+    fig.savefig("confusion_matrix.pdf")
+
 
     for i in range(num_classes):
-        # if not np.isnan(accuracy[i]):
-            # log('Accuracy(Recall) of %5s : %2f %%, Precision : %2f %%, F1-score : %2f %%' 
-            # % classes[i], 100 * accuracy[i], 100 * precision[i], f_score[i])
-        # else:
-            # log('Accuracy of %5s : %2f %%' % (classes[i], 0.0))
         log('Accuracy(Recall) of %5s : %2f %%, Precision : %2f %%, F1-score : %2f %%' 
             % (classes[i], 100 * accuracy[i], 100 * precision[i], 100 * f_score[i]))
-    
     log('Total accuracy : %2f %%' % (100 * total_accuracy))
-
 
 if __name__ == "__main__":
     args = parse_cmd_line_arguments()
