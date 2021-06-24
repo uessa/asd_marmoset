@@ -41,10 +41,10 @@ def print_cmd_line_arguments(args, log):
 def get_data_loaders(path, batch_size, arch):
     # classes = ('0', '1', '2', '3')
     # num_classes = 4
-    # classes = ('0', '1')
-    # num_classes = 2
-    classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11')
-    num_classes = 12
+    classes = ('0', '1')
+    num_classes = 2
+    # classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11')
+    # num_classes = 12
     trainset = dataset.Mydatasets(p.train, arch)
     testset = dataset.Mydatasets(p.test, arch)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
