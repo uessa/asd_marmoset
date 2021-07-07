@@ -1,7 +1,7 @@
 #!/bin/sh
 
-python makedata.py "subset_ayapyon_phee" \
+python makedata.py "subset_ayapyon_vad_fftlen1024" \
        -r 96000 \
-       -l 2048 \
-       -s 1024 \
+       -l 1024 \
+       -s 512 \
        -w hamming
