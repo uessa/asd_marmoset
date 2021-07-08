@@ -41,7 +41,7 @@ class Mydatasets(torch.utils.data.Dataset):
         return outdata_spec, outdata_label
 
 if __name__ == "__main__":
-    p = path.path('subset_ayapyon_vad_fftlen4096')
+    p = path.path('subset_ayapyon_phee_fftlen4096')
     train = p.train
     mydataset = Mydatasets(train, 'cnn')
     trainloader = torch.utils.data.DataLoader(
