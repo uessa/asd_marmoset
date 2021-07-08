@@ -50,7 +50,7 @@ def set_random_seed(seed):
 def get_data_loaders(path, batch_size, arch):
     # p.mkdir(parents=True, exist_ok=True)
 
-    num_classes = 2
+    num_classes = 12
 
     # trainset = AudioFolder(p / 'train', transform=transform)
     trainset = dataset.Mydatasets(p.train, arch)
