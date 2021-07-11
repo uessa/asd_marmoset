@@ -38,7 +38,7 @@ class NetworkCNN(nn.Module):
     def __init__(self):
         super(NetworkCNN, self).__init__()
         ch_in = 1
-        ch_out = 2
+        ch_out = 12
         ch_1, ch_2, ch_3, ch_4, ch_5, ch_6 = 10, 20, 20, 10, 10, 10
         self.net = nn.Sequential(
             nn.Conv2d(
