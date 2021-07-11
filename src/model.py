@@ -38,8 +38,8 @@ class NetworkCNN(nn.Module):
     def __init__(self):
         super(NetworkCNN, self).__init__()
         ch_in = 1
-        ch_out = 12
-        ch_1, ch_2, ch_3, ch_4, ch_5 = 10, 20, 20, 10, 10
+        ch_out = 2
+        ch_1, ch_2, ch_3, ch_4, ch_5, ch_6 = 10, 20, 20, 10, 10, 10
         self.net = nn.Sequential(
             nn.Conv2d(
                 ch_in, ch_1, kernel_size=3, stride=1, padding=1, dilation=1
@@ -82,7 +82,15 @@ class NetworkCNN(nn.Module):
             nn.ReLU(),
             nn.BatchNorm2d(ch_5),
             nn.Conv2d(
-                ch_5, ch_out, kernel_size=3, stride=1, padding=1, dilation=1
+                ch_5, ch_6, kernel_size=3, stride=1, padding=4, dilation=4
+            ),
+            nn.MaxPool2d(
+                kernel_size=3, stride=(3, 1), padding=(0, 1), dilation=1, ceil_mode=True
+            ),
+            nn.ReLU(),
+            nn.BatchNorm2d(ch_6),
+            nn.Conv2d(
+                ch_6, ch_out, kernel_size=3, stride=1, padding=1, dilation=1
             ),
             nn.AvgPool2d(kernel_size=(3, 3), stride=(3, 1), padding=(0, 1), ceil_mode=True),
             nn.ReLU(),

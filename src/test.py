@@ -42,10 +42,10 @@ def print_cmd_line_arguments(args, log):
 def get_data_loaders(path, batch_size, arch):
     # classes = ('0', '1', '2', '3')
     # num_classes = 4
-    # classes = ('0', '1')
-    # num_classes = 2
-    classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11')
-    num_classes = 12
+    classes = ('0', '1')
+    num_classes = 2
+    # classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11')
+    # num_classes = 12
     trainset = dataset.Mydatasets(p.train, arch)
     testset = dataset.Mydatasets(p.test, arch)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -97,13 +97,13 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
     total_accuracy = np.sum(np.diag(cm)) / np.sum(cm)
     precision = np.diag(cm) / np.sum(cm, axis=0)
     f_score = (2 * accuracy * precision) / (accuracy + precision)
-    # cm_label = ['No Call', 'Call']
+    cm_label = ['No Call', 'Call']
     # cm_label = ['Not Phee', 'Phee']
-    cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Tsik', 'Ek', 'Cough', 'Cry', 'Phee-trill', 'Trill-phee', 'Ek-tsik', 'Unknown']
+    # cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Tsik', 'Ek', 'Cough', 'Cry', 'Phee-trill', 'Trill-phee', 'Ek-tsik', 'Unknown']
     fig = plt.figure(figsize=(10, 10))
     # 2クラス分類：font=25,annot_kws35, 12クラス分類：font=15,annot_kws10
-    plt.rcParams["font.size"] = 15
-    sns.heatmap(cm, annot=True, cmap='GnBu', xticklabels=cm_label, yticklabels=cm_label, fmt='.10g', square=True, annot_kws={'size':10})
+    plt.rcParams["font.size"] = 25
+    sns.heatmap(cm, annot=True, cmap='GnBu', xticklabels=cm_label, yticklabels=cm_label, fmt='.10g', square=True, annot_kws={'size':35})
     plt.ylim(cm.shape[0], 0)
     plt.xlabel('Estimated Label')
     plt.ylabel('Ground Truth Label')
