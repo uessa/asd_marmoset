@@ -97,8 +97,8 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
     total_accuracy = np.sum(np.diag(cm)) / np.sum(cm)
     precision = np.diag(cm) / np.sum(cm, axis=0)
     f_score = (2 * accuracy * precision) / (accuracy + precision)
-    # cm_label = ['No Call', 'Call']
-    cm_label = ['Not Phee', 'Phee']
+    cm_label = ['No Call', 'Call']
+    # cm_label = ['Not Phee', 'Phee']
     # cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Tsik', 'Ek', 'Cough', 'Cry', 'Phee-trill', 'Trill-phee', 'Ek-tsik', 'Unknown']
     fig = plt.figure(figsize=(10, 10))
     # 2クラス分類：font=25,annot_kws35, 12クラス分類：font=15,annot_kws10
