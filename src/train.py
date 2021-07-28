@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 import torchaudio
 from torchsummary import summary
 import trainer
@@ -15,6 +16,7 @@ import dataset
 import path
 import logger
 import dataset
+from focalloss import *
 from functions import chk
 plt.switch_backend("agg")
 
@@ -121,6 +123,7 @@ if __name__ == "__main__":
         # summary(net, input_size=(2, 513, 1000))
 
     criterion = nn.CrossEntropyLoss()
+    # criterion = FocalLoss(gamma=1)
 
     optimizer = optim.SGD(net.parameters(), lr=args.lr,
                               momentum=0.9, dampening=0,
@@ -131,7 +134,7 @@ if __name__ == "__main__":
                                                0.1)
 
     start_time = time.time()
-    trainer = trainer.CNNTrainer(net, optimizer, criterion,
+    trainer = trainer.CNNTrainer(net, optimizer, FocalLoss(gamma=5),
                                         trainloader, device)
     costs = []
     train_accuracy = []
