@@ -2,7 +2,10 @@ import time
 import os
 import argparse
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
+import librosa.display
 import pathlib
 import torch
 import torch.nn as nn
@@ -42,10 +45,10 @@ def print_cmd_line_arguments(args, log):
 def get_data_loaders(path, batch_size, arch):
     # classes = ('0', '1', '2', '3')
     # num_classes = 4
-    # classes = ('0', '1')
-    # num_classes = 2
-    classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11')
-    num_classes = 12
+    classes = ('0', '1')
+    num_classes = 2
+    # classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11')
+    # num_classes = 12
     trainset = dataset.Mydatasets(p.train, arch)
     testset = dataset.Mydatasets(p.test, arch)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -102,8 +105,8 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
             % (classes[i], 100 * accuracy[i], 100 * precision[i], 100 * f_score[i]))
     log('Total accuracy : %2f %%' % (100 * total_accuracy))
 
-    make_confusion_matrix(cm)
-    # np.savetxt('predicted_label.txt', predicted.numpy()[0][0])
+    # make_confusion_matrix(cm)
+    make_fig(waveforms, predicted, labels)
 
 def make_confusion_matrix(cm):
     # cm_label = ['No Call', 'Call']
@@ -119,6 +122,30 @@ def make_confusion_matrix(cm):
     plt.tight_layout()
     plt.show()
     fig.savefig("confusion_matrix.pdf")
+
+def make_fig(waveforms, predicted, labels):
+    # Spectrogram_GroundTruthLabel_EstimateLabel
+    start = 1
+    stop = 33103
+    time = np.linspace(0, 353, stop)
+    ref = np.median(np.abs(waveforms))
+    powspec = librosa.amplitude_to_db(np.abs(waveforms), ref=ref)
+    powspec = np.squeeze(powspec)
+    fig = plt.figure(figsize=(10, 10))
+    librosa.display.specshow(
+        powspec,
+        sr=96000,
+        hop_length=1024,
+        cmap="rainbow",
+        # cmap="RdYlBu",
+        x_axis="time",
+        y_axis="hz",
+        norm=Normalize(vmin=-20, vmax=20),
+    )
+    plt.xlim(100, 150)
+    plt.colorbar(format="%+2.0fdB")
+    plt.show()
+    fig.savefig("spec.pdf")
 
 if __name__ == "__main__":
     args = parse_cmd_line_arguments()
