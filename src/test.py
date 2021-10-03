@@ -93,6 +93,19 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
             for n in range(len(labels)):
                 cm += confusion_matrix(labels[n][0], predicted[n][0], [i for i in range(num_classes)])
 
+    accuracy = np.diag(cm) / np.sum(cm, axis=1)
+    total_accuracy = np.sum(np.diag(cm)) / np.sum(cm)
+    precision = np.diag(cm) / np.sum(cm, axis=0)
+    f_score = (2 * accuracy * precision) / (accuracy + precision)
+    for i in range(num_classes):
+        log('Accuracy(Recall) of %5s : %2f %%, Precision : %2f %%, F1-score : %2f %%' 
+            % (classes[i], 100 * accuracy[i], 100 * precision[i], 100 * f_score[i]))
+    log('Total accuracy : %2f %%' % (100 * total_accuracy))
+
+    make_confusion_matrix(cm)
+    # np.savetxt('predicted_label.txt', predicted.numpy()[0][0])
+
+def make_confusion_matrix(cm):
     # cm_label = ['No Call', 'Call']
     # cm_label = ['Not Phee', 'Phee']
     cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Tsik', 'Ek', 'Cough', 'Cry', 'Phee-trill', 'Trill-phee', 'Ek-tsik', 'Unknown']
@@ -106,17 +119,6 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
     plt.tight_layout()
     plt.show()
     fig.savefig("confusion_matrix.pdf")
-
-    np.savetxt('predicted_label.txt', predicted.numpy()[0][0])
-
-    accuracy = np.diag(cm) / np.sum(cm, axis=1)
-    total_accuracy = np.sum(np.diag(cm)) / np.sum(cm)
-    precision = np.diag(cm) / np.sum(cm, axis=0)
-    f_score = (2 * accuracy * precision) / (accuracy + precision)
-    for i in range(num_classes):
-        log('Accuracy(Recall) of %5s : %2f %%, Precision : %2f %%, F1-score : %2f %%' 
-            % (classes[i], 100 * accuracy[i], 100 * precision[i], 100 * f_score[i]))
-    log('Total accuracy : %2f %%' % (100 * total_accuracy))
 
 if __name__ == "__main__":
     args = parse_cmd_line_arguments()
