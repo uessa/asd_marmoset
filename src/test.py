@@ -125,13 +125,18 @@ def make_confusion_matrix(cm):
 
 def make_fig(waveforms, predicted, labels):
     # Spectrogram_GroundTruthLabel_EstimateLabel
+    predicted = np.squeeze(predicted)
+    labels = np.squeeze(labels)
     start = 1
-    stop = 33103
+    # stop = 33103
+    stop = labels.size()[0]
     time = np.linspace(0, 353, stop)
     ref = np.median(np.abs(waveforms))
     powspec = librosa.amplitude_to_db(np.abs(waveforms), ref=ref)
     powspec = np.squeeze(powspec)
-    fig = plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(10,10))
+    plt.subplot(2, 1, 1)
+    plt.title('Spectrogram', fontsize=18)
     librosa.display.specshow(
         powspec,
         sr=96000,
@@ -140,12 +145,35 @@ def make_fig(waveforms, predicted, labels):
         # cmap="RdYlBu",
         x_axis="time",
         y_axis="hz",
-        norm=Normalize(vmin=-20, vmax=20),
+        norm=Normalize(vmin=-10, vmax=10),
     )
-    plt.xlim(100, 150)
-    plt.colorbar(format="%+2.0fdB")
+    # plt.xlim(100, 150)
+    plt.xlim(0, 50)
+    plt.xticks([100, 110, 120, 130, 140, 150], [100, 110, 120, 130, 140, 150])
+    plt.yticks([0, 10000, 20000, 30000, 40000, 48000], [0, 1, 2, 3, 4, 4.8])
+    plt.xlabel('Time [s]', fontsize=18)
+    plt.ylabel('Frequency [kHz]', fontsize=18)
+    plt.tick_params(labelsize=16)
+    # plt.colorbar(format="%+2.0fdB")
+    plt.subplot(4, 1, 3)
+    plt.title('Ground Truth Label', fontsize=18)
+    plt.plot(time, labels)
+    # plt.xlim(100, 150)
+    plt.xlim(0, 50)
+    plt.yticks([0, 1], [0, 1])
+    plt.xlabel('Time [s]', fontsize=18)
+    plt.tick_params(labelsize=16)
+    plt.subplot(4, 1, 4)
+    plt.title('Estimated Label', fontsize=18)
+    plt.plot(time, predicted)
+    # plt.xlim(100, 150)
+    plt.xlim(0, 50)
+    plt.yticks([0, 1], [0, 1])
+    plt.xlabel('Time [s]', fontsize=18)
+    plt.tick_params(labelsize=16)
+    plt.tight_layout()
+    plt.savefig("spec_label.pdf")
     plt.show()
-    fig.savefig("spec.pdf")
 
 if __name__ == "__main__":
     args = parse_cmd_line_arguments()
