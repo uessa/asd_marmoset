@@ -50,15 +50,9 @@ def set_random_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 def get_data_loaders(path, batch_size, arch):
-    # p.mkdir(parents=True, exist_ok=True)
-
-    num_classes = 12
-
-    # trainset = AudioFolder(p / 'train', transform=transform)
+    num_classes = 5
     trainset = dataset.Mydatasets(p.train, arch)
-    # valset = AudioFolder(p / 'evaluate', transform=transform)
     valset = dataset.Mydatasets(p.valid, arch)
-
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
                                               shuffle=False, num_workers=2, collate_fn=collate_fn)
     valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size,
@@ -73,7 +67,6 @@ def collate_fn(batch):
         if sig_len < image.shape[2]:
             sig_len = image.shape[2]
 
-
     for image, label in batch:
         padded_image = np.zeros([n_ch, n_freq, sig_len])
         padded_label = np.zeros([1, sig_len])
@@ -86,7 +79,6 @@ def collate_fn(batch):
 
     images = torch.stack(images, dim=0)
     labels = torch.stack(labels, dim=0)
-
     return images, labels
 
 def save_model(model, path):
@@ -111,9 +103,7 @@ if __name__ == "__main__":
         set_random_seed(args.seed)
 
     device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
-
     trainloader, valloader, num_classes = get_data_loaders(p, args.batch_size, arch)
-
     # net = model.ResNet('ResNet18', num_classes=num_classes)
     net = model.NetworkCNN()
     net = net.to(device)
@@ -123,8 +113,6 @@ if __name__ == "__main__":
         # summary(net, input_size=(2, 513, 1000))
 
     criterion = nn.CrossEntropyLoss()
-    # criterion = FocalLoss(gamma=1)
-
     optimizer = optim.SGD(net.parameters(), lr=args.lr,
                               momentum=0.9, dampening=0,
                               weight_decay=0.0001, nesterov=False)
@@ -134,7 +122,7 @@ if __name__ == "__main__":
                                                0.1)
 
     start_time = time.time()
-    trainer = trainer.CNNTrainer(net, optimizer, FocalLoss(gamma=5),
+    trainer = trainer.CNNTrainer(net, optimizer, criterion,
                                         trainloader, device)
     costs = []
     train_accuracy = []
@@ -158,5 +146,4 @@ if __name__ == "__main__":
 
     save_model(net, p)
     os.system('end_report "ひで(河内)" Training')
-
     show_history(train_accuracy, val_accuracy)
