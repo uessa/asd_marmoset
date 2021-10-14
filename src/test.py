@@ -103,8 +103,8 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
             % (classes[i], 100 * accuracy[i], 100 * precision[i], 100 * f_score[i]))
     log('Total accuracy : %2f %%' % (100 * total_accuracy))
 
-    make_confusion_matrix(cm)
-    # make_fig(waveforms, predicted, labels)
+    # make_confusion_matrix(cm)
+    make_fig(waveforms, predicted, labels)
 
 def make_confusion_matrix(cm):
     # cm_label = ['No Call', 'Call']
@@ -139,11 +139,11 @@ def make_fig(waveforms, predicted, labels):
         powspec,
         sr=96000,
         hop_length=1024,
-        cmap="rainbow",
+        cmap="rainbow_r",
         # cmap="RdYlBu",
         x_axis="time",
         y_axis="hz",
-        norm=Normalize(vmin=-10, vmax=10),
+        norm=Normalize(vmin=-10, vmax=2),
     )
     plt.xlim(100, 150)
     plt.xticks([100, 110, 120, 130, 140, 150], [100, 110, 120, 130, 140, 150])

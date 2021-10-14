@@ -16,11 +16,12 @@ def wavread(fn, resr=None):
 
 def calc_length_of_signal():
 
-    path = pathlib.Path("/datanet/users/hkawauchi/vad_marmoset/datasets/subset_marmoset_3UE/raw/test")  # ここを変更する．
+    path = pathlib.Path("/datanet/users/hkawauchi/vad_marmoset/datasets/subset_marmoset_24UE/raw/test")  # ここを変更する．
     file = list(path.glob("*.wav"))
     total_sec = 0
     for f in file:
         data, sr, subtype = wavread(f)
+        print(sr)
         if data.ndim == 2:  # stereo
             total_sec += len(data[:, 0]) / sr
         else:  # mono
