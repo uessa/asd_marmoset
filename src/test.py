@@ -110,6 +110,10 @@ def make_confusion_matrix(cm):
     # cm_label = ['No Call', 'Call']
     # cm_label = ['Not Phee', 'Phee']
     cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls']
+
+    # 行毎に確率値を出して色分け, annot=None
+    # cm = cm / np.sum(cm, axis=1, keepdims=True)
+
     fig = plt.figure(figsize=(10, 10))
     # 2クラス分類：font=25,annot_kws35, 12クラス分類：font=15,annot_kws10, 5クラス分類：font=15,annot_kws20
     plt.rcParams["font.size"] = 18
