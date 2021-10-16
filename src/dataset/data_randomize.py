@@ -42,24 +42,51 @@ def randomize(in_dir, out_dir, proportion, flag_label):
     pathlib.Path(out_path.parent / "test").mkdir(exist_ok=True)
 
     # Get file list
-    datalist = in_path.glob("*.wav")
+    # datalist = in_path.glob("*.wav")
 
     # Calc size of each dataset
-    datalist, tmp = itertools.tee(datalist)
-    n_data = len(list(tmp))
-    n_train, n_valid, n_test = prop2num(n_data, proportion)
-    print(n_data)
-    print(n_train)
-    print(n_valid)
-    print(n_test)
+    # datalist, tmp = itertools.tee(datalist)
+    # n_data = len(list(tmp))
+    # n_train, n_valid, n_test = prop2num(n_data, proportion)
+    # print(n_train)
+    # print(n_valid)
+    # print(n_test)
 
     # randomize
+    dic_marmoset = {
+        0: ["あいぴょん"],
+        1: ["あやぴょん"],
+        2: ["イカ玉"],
+        3: ["エバート"],
+        4: ["カルビ"],
+        5: ["スカイドン"],
+        6: ["テレスドン"],
+        7: ["ドラコ"],
+        8: ["ビスコッテイー", "ビスコッティー"],
+        9: ["ぶた玉"],
+        10: ["ブラウニー"],
+        11: ["マティアス"],
+        12: ["マルチナ"],
+        13: ["ミコノス"],
+        14: ["阿伏兎"],
+        15: ["黄金"],
+        16: ["花月"],
+        17: ["会津"],
+        18: ["三春"],
+        19: ["信成"],
+        20: ["真央"],
+        21: ["鶴ヶ城"],
+        22: ["梨花"]
+    }
+    n_data = len(dic_marmoset)
+    n_train, n_valid, n_test = prop2num(n_data, proportion)
     setdic = {"0": "train", "1": "valid", "2": "test"}
     idx = [0] * n_data
     idx[n_train : n_train + n_valid] = [1] * n_valid
-    # idx[n_train + n_valid :] = [2] * n_test
     idx[n_train + n_valid :] = [2] * (n_data - n_train - n_valid)
-    print(len(idx))
+    random.shuffle(idx)
+    random.shuffle(idx)
+    random.shuffle(idx)
 
     # make shellscript
     with open(file_path, "w") as f:
@@ -69,15 +96,18 @@ def randomize(in_dir, out_dir, proportion, flag_label):
         f.write("LABELOUTDIR=" + str(out_path.parent) + "\n\n")
         # make link
         count = 0
-        for d in datalist:
-            # write *.wav
-            fname = setdic[str(idx[count])] + "/" + d.name
-            command = 'ln -s $INDIR/"' + d.name + '" $DATAOUTDIR/"' + fname + '"\n'
-            f.write(command)
-            if flag_label:
-                command = 'cp $INDIR/"' + d.name + '" $LABELOUTDIR/"' + fname + '"\n'
-                f.write(command.replace("wav", "txt"))
-            count += 1
+        for dm in range(n_data):
+            for l in dic_marmoset[dm]:
+                datalist = in_path.glob("*" + l + "*.wav")
+                datalist, tmp = itertools.tee(datalist)
+                for d in datalist:
+                    # write *.wav
+                    fname = setdic[str(idx[dm])] + "/" + d.name
+                    command = 'ln -s $INDIR/"' + d.name + '" $DATAOUTDIR/"' + fname + '"\n'
+                    f.write(command)
+                    if flag_label:
+                        command = 'cp $INDIR/"' + d.name + '" $LABELOUTDIR/"' + fname + '"\n'
+                        f.write(command.replace("wav", "txt"))
 
     chmod(file_path, 0o744)
 
