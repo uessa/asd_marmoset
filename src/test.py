@@ -104,7 +104,7 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
     log('Total accuracy : %2f %%' % (100 * total_accuracy))
 
     make_confusion_matrix(cm)
-    # make_fig(waveforms, predicted, labels)
+    make_fig(waveforms, predicted, labels)
 
 def make_confusion_matrix(cm):
     # cm_label = ['No Call', 'Call']
@@ -112,12 +112,12 @@ def make_confusion_matrix(cm):
     cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls']
 
     # 行毎に確率値を出して色分け, annot=None
-    # cm = cm / np.sum(cm, axis=1, keepdims=True)
+    cm_prob = cm / np.sum(cm, axis=1, keepdims=True)
 
     fig = plt.figure(figsize=(10, 10))
     # 2クラス分類：font=25,annot_kws35, 12クラス分類：font=15,annot_kws10, 5クラス分類：font=15,annot_kws20
     plt.rcParams["font.size"] = 18
-    sns.heatmap(cm, annot=True, cmap='GnBu', xticklabels=cm_label, yticklabels=cm_label, fmt='.10g', square=True, annot_kws={'size':20})
+    sns.heatmap(cm_prob, annot=cm, cmap='GnBu', xticklabels=cm_label, yticklabels=cm_label, fmt='.10g', square=True, annot_kws={'size':20})
     plt.ylim(cm.shape[0], 0)
     plt.xlabel('Estimated Label')
     plt.ylabel('Ground Truth Label')
@@ -132,7 +132,8 @@ def make_fig(waveforms, predicted, labels):
     start = 1
     # stop = 33103
     stop = labels.size()[0]
-    time = np.linspace(0, 353, stop)
+    end_time = stop * 1024 / 96000
+    time = np.linspace(0, end_time, stop)
     ref = np.median(np.abs(waveforms))
     powspec = librosa.amplitude_to_db(np.abs(waveforms), ref=ref)
     powspec = np.squeeze(powspec)
@@ -149,20 +150,28 @@ def make_fig(waveforms, predicted, labels):
         y_axis="hz",
         norm=Normalize(vmin=-10, vmax=2),
     )
-    plt.xlim(100, 150)
-    plt.xticks([100, 110, 120, 130, 140, 150], [100, 110, 120, 130, 140, 150])
+    plt.xlim(200, 250)
+    plt.xticks([200, 210, 220, 230, 240, 250], [200, 210, 220, 230, 240, 250])
     plt.yticks([0, 10000, 20000, 30000, 40000, 48000], [0, 10, 20, 30, 40, 48])
     plt.xlabel('Time [s]', fontsize=18)
     plt.ylabel('Frequency [kHz]', fontsize=18)
     plt.tick_params(labelsize=16)
     # plt.colorbar(format="%+2.0fdB")
     plt.subplot(4, 1, 3)
-    plt.title('Labels', fontsize=18)
-    plt.plot(time, labels)
-    plt.plot(time, predicted*0.8, linewidth=1)
-    plt.xlim(100, 150)
+    plt.title('Ground Truth Label', fontsize=18)
+    plt.plot(time, labels/4)
+    # plt.plot(time, predicted*0.8, linewidth=1)
+    plt.xlim(200, 250)
+    plt.yticks([0, 0.25, 0.5, 0.75, 1.0], ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls'])
     plt.xlabel('Time [s]', fontsize=18)
-    plt.tick_params(labelsize=16, labelleft=False, left=False)
+    plt.tick_params(labelsize=16)
+    plt.subplot(4, 1, 4)
+    plt.title('Estimated Label', fontsize=18)
+    plt.plot(time, predicted/4)
+    plt.xlim(200, 250)
+    plt.yticks([0, 0.25, 0.5, 0.75, 1.0], ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls'])
+    plt.xlabel('Time [s]', fontsize=18)
+    plt.tick_params(labelsize=16)
     plt.tight_layout()
     plt.savefig("spec_label.pdf")
     plt.show()
