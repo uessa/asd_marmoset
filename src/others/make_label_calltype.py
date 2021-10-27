@@ -96,5 +96,7 @@ if __name__ == "__main__":
     # Get file list
     list_text = path_text.glob("./*.txt")
     list_wav = path_wav.glob("*.wav")
-    list_data = np.c_[list(list_text), list(list_wav)]
+    sort_list_text = sorted(list_text)
+    sort_list_wav = sorted(list_wav)
+    list_data = np.c_[list(sort_list_text), list(sort_list_wav)]
     write_label_para(list_data)

@@ -45,8 +45,10 @@ def print_cmd_line_arguments(args, log):
 def get_data_loaders(path, batch_size, arch):
     # classes = ('0', '1')
     # num_classes = 2
-    classes = ('0', '1', '2', '3', '4')
-    num_classes = 5
+    # classes = ('0', '1', '2', '3', '4')
+    # num_classes = 5
+    classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13')
+    num_classes = 14
     trainset = dataset.Mydatasets(p.train, arch)
     testset = dataset.Mydatasets(p.test, arch)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -104,26 +106,30 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
     log('Total accuracy : %2f %%' % (100 * total_accuracy))
 
     make_confusion_matrix(cm)
-    make_fig(waveforms, predicted, labels)
+    # make_fig(waveforms, predicted, labels)
 
 def make_confusion_matrix(cm):
     # cm_label = ['No Call', 'Call']
     # cm_label = ['Not Phee', 'Phee']
     cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls']
-
-    # 行毎に確率値を出して色分け, annot=None
+    cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
+    # 行毎に確率値を出して色分け
     cm_prob = cm / np.sum(cm, axis=1, keepdims=True)
+    cm = cm[:, :5]
+    cm = cm.T
+    cm_prob = cm_prob[:, :5]
+    cm_prob = cm_prob.T
 
     fig = plt.figure(figsize=(10, 10))
     # 2クラス分類：font=25,annot_kws35, 12クラス分類：font=15,annot_kws10, 5クラス分類：font=15,annot_kws20
-    plt.rcParams["font.size"] = 18
-    sns.heatmap(cm_prob, annot=cm, cmap='GnBu', xticklabels=cm_label, yticklabels=cm_label, fmt='.10g', square=True, annot_kws={'size':20})
+    plt.rcParams["font.size"] = 7
+    sns.heatmap(cm_prob, annot=cm, cmap='GnBu', cbar=False, xticklabels=cm_label_estimate, yticklabels=cm_label, fmt='.10g', square=True, annot_kws={'size':8})
     plt.ylim(cm.shape[0], 0)
-    plt.xlabel('Estimated Label')
-    plt.ylabel('Ground Truth Label')
+    plt.xlabel('Ground Truth Label')
+    plt.ylabel('Estimated Label')
     plt.tight_layout()
     plt.show()
-    fig.savefig("confusion_matrix.pdf")
+    fig.savefig("confusion_matrix_othercalls_t.pdf")
 
 def make_fig(waveforms, predicted, labels):
     # Spectrogram_GroundTruthLabel_EstimateLabel
@@ -134,6 +140,8 @@ def make_fig(waveforms, predicted, labels):
     stop = labels.size()[0]
     end_time = stop * 1024 / 96000
     time = np.linspace(0, end_time, stop)
+
+    # スペクトログラム
     ref = np.median(np.abs(waveforms))
     powspec = librosa.amplitude_to_db(np.abs(waveforms), ref=ref)
     powspec = np.squeeze(powspec)
@@ -157,19 +165,101 @@ def make_fig(waveforms, predicted, labels):
     plt.ylabel('Frequency [kHz]', fontsize=18)
     plt.tick_params(labelsize=16)
     # plt.colorbar(format="%+2.0fdB")
+
+    # 正解ラベル
     plt.subplot(4, 1, 3)
     plt.title('Ground Truth Label', fontsize=18)
-    plt.plot(time, labels/4)
+    color_label = {0:"black", 1:"crimson", 2:"darkgreen", 3:"mediumblue", 4:"gold"}
+    call_label = {0:"No Call", 1:"Phee", 2:"Trill", 3:"Twitter", 4:"Other Calls"}
+    for i in range(max(labels)):
+        first_plot = True
+        labels_convert = (labels == (i+1))
+        j = 0
+        while j < len(labels):
+            if labels_convert[j]:
+                start_call = j - 1
+                while labels_convert[j]:
+                    j = j + 1
+                end_call = j + 1
+                if first_plot:
+                    plt.plot(time[start_call : end_call], labels_convert[start_call : end_call], linestyle="solid", linewidth=0.8, color=color_label[i+1], label=call_label[i+1])
+                    first_plot = False
+                else:
+                    plt.plot(time[start_call : end_call], labels_convert[start_call : end_call], linestyle="solid", linewidth=0.8, color=color_label[i+1])
+            else:
+                j = j + 1
+
+    k = 0
+    first_plot = True
+    while k < len(labels):
+        if labels[k] == 0:
+            start_no_call = k
+            while labels[k] == 0:
+                k = k + 1
+                if k >= len(labels):
+                    break
+            end_no_call = k - 1
+            if first_plot:
+                plt.plot(time[start_no_call : end_no_call], labels[start_no_call : end_no_call], linestyle="solid", linewidth=0.8, color=color_label[0], label=call_label[0])
+                first_plot = False
+            else:
+                plt.plot(time[start_no_call : end_no_call], labels[start_no_call : end_no_call], linestyle="solid", linewidth=0.8, color=color_label[0])
+        else:
+            k = k + 1
+            if k >= len(labels):
+                break
+    # plt.plot(time, labels/4)
     # plt.plot(time, predicted*0.8, linewidth=1)
     plt.xlim(200, 250)
-    plt.yticks([0, 0.25, 0.5, 0.75, 1.0], ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls'])
+    # plt.yticks([0, 0.25, 0.5, 0.75, 1.0], ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls'])
+    plt.legend(loc='upper right')
     plt.xlabel('Time [s]', fontsize=18)
     plt.tick_params(labelsize=16)
+
+    # 推定ラベル
     plt.subplot(4, 1, 4)
     plt.title('Estimated Label', fontsize=18)
-    plt.plot(time, predicted/4)
+    for i in range(max(predicted)):
+        first_plot = True
+        predicted_convert = (predicted == (i+1))
+        j = 0
+        while j < len(predicted):
+            if predicted_convert[j]:
+                start_call = j - 1
+                while predicted_convert[j]:
+                    j = j + 1
+                end_call = j + 1
+                if first_plot:
+                    plt.plot(time[start_call : end_call], predicted_convert[start_call : end_call], linestyle="solid", linewidth=0.8, color=color_label[i+1], label=call_label[i+1])
+                    first_plot = False
+                else:
+                    plt.plot(time[start_call : end_call], predicted_convert[start_call : end_call], linestyle="solid", linewidth=0.8, color=color_label[i+1])
+            else:
+                j = j + 1
+
+    k = 0
+    first_plot = True
+    while k < len(predicted):
+        if predicted[k] == 0:
+            start_no_call = k
+            while predicted[k] == 0:
+                k = k + 1
+                if k >= len(labels):
+                    break
+            end_no_call = k - 1
+            if first_plot:
+                plt.plot(time[start_no_call : end_no_call], predicted[start_no_call : end_no_call], linestyle="solid", linewidth=0.8, color=color_label[0], label=call_label[0])
+                first_plot = False
+            else:
+                plt.plot(time[start_no_call : end_no_call], predicted[start_no_call : end_no_call], linestyle="solid", linewidth=0.8, color=color_label[0])
+        else:
+            k = k + 1
+            if k >= len(labels):
+                break
+    # plt.plot(time, predicted/4)
     plt.xlim(200, 250)
-    plt.yticks([0, 0.25, 0.5, 0.75, 1.0], ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls'])
+    # plt.yticks([0, 0.25, 0.5, 0.75, 1.0], ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls'])
+    plt.legend(loc='upper right')
     plt.xlabel('Time [s]', fontsize=18)
     plt.tick_params(labelsize=16)
     plt.tight_layout()
