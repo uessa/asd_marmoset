@@ -43,12 +43,8 @@ def print_cmd_line_arguments(args, log):
 
 
 def get_data_loaders(path, batch_size, arch):
-    # classes = ('0', '1')
-    # num_classes = 2
-    # classes = ('0', '1', '2', '3', '4')
-    # num_classes = 5
-    classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13')
-    num_classes = 14
+    classes = ('0', '1', '2', '3', '4')
+    num_classes = 5
     trainset = dataset.Mydatasets(p.train, arch)
     testset = dataset.Mydatasets(p.test, arch)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -101,18 +97,16 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
     precision = np.diag(cm) / np.sum(cm, axis=0)
     f_score = (2 * accuracy * precision) / (accuracy + precision)
     for i in range(num_classes):
-        log('Accuracy(Recall) of %5s : %2f %%, Precision : %2f %%, F1-score : %2f %%' 
+        log('Recall of %5s : %2f %%, Precision : %2f %%, F1-score : %2f %%' 
             % (classes[i], 100 * accuracy[i], 100 * precision[i], 100 * f_score[i]))
     log('Total accuracy : %2f %%' % (100 * total_accuracy))
 
-    make_confusion_matrix(cm)
-    # make_fig(waveforms, predicted, labels)
+    # make_confusion_matrix(cm)
+    make_fig(waveforms, predicted, labels)
 
 def make_confusion_matrix(cm):
-    # cm_label = ['No Call', 'Call']
-    # cm_label = ['Not Phee', 'Phee']
     cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls']
-    cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
+    # cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
     # 行毎に確率値を出して色分け
     cm_prob = cm / np.sum(cm, axis=1, keepdims=True)
     cm = cm[:, :5]
@@ -125,8 +119,8 @@ def make_confusion_matrix(cm):
     plt.rcParams["font.size"] = 7
     sns.heatmap(cm_prob, annot=cm, cmap='GnBu', cbar=False, xticklabels=cm_label_estimate, yticklabels=cm_label, fmt='.10g', square=True, annot_kws={'size':8})
     plt.ylim(cm.shape[0], 0)
-    plt.xlabel('Ground Truth Label')
-    plt.ylabel('Estimated Label')
+    plt.xlabel('Estimated Label')
+    plt.ylabel('Ground Truth Label')
     plt.tight_layout()
     plt.show()
     fig.savefig("confusion_matrix_othercalls_t.pdf")
@@ -136,7 +130,6 @@ def make_fig(waveforms, predicted, labels):
     predicted = np.squeeze(predicted)
     labels = np.squeeze(labels)
     start = 1
-    # stop = 33103
     stop = labels.size()[0]
     end_time = stop * 1024 / 96000
     time = np.linspace(0, end_time, stop)
@@ -212,6 +205,7 @@ def make_fig(waveforms, predicted, labels):
     # plt.plot(time, predicted*0.8, linewidth=1)
     plt.xlim(200, 250)
     # plt.yticks([0, 0.25, 0.5, 0.75, 1.0], ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls'])
+    plt.yticks([0, 1.0], ['No Call', 'Call'])
     plt.legend(loc='upper right')
     plt.xlabel('Time [s]', fontsize=18)
     plt.tick_params(labelsize=16)
@@ -259,11 +253,12 @@ def make_fig(waveforms, predicted, labels):
     # plt.plot(time, predicted/4)
     plt.xlim(200, 250)
     # plt.yticks([0, 0.25, 0.5, 0.75, 1.0], ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls'])
+    plt.yticks([0, 1.0], ['No Call', 'Call'])
     plt.legend(loc='upper right')
     plt.xlabel('Time [s]', fontsize=18)
     plt.tick_params(labelsize=16)
     plt.tight_layout()
-    plt.savefig("spec_label.pdf")
+    plt.savefig("spec_labels.pdf")
     plt.show()
 
 if __name__ == "__main__":
