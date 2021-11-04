@@ -43,8 +43,10 @@ def print_cmd_line_arguments(args, log):
 
 
 def get_data_loaders(path, batch_size, arch):
-    classes = ('0', '1', '2', '3', '4')
-    num_classes = 5
+    # classes = ('0', '1', '2', '3', '4')
+    # num_classes = 5
+    classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13')
+    num_classes = 14
     trainset = dataset.Mydatasets(p.train, arch)
     testset = dataset.Mydatasets(p.test, arch)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -101,12 +103,12 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
             % (classes[i], 100 * accuracy[i], 100 * precision[i], 100 * f_score[i]))
     log('Total accuracy : %2f %%' % (100 * total_accuracy))
 
-    # make_confusion_matrix(cm)
-    make_fig(waveforms, predicted, labels)
+    make_confusion_matrix(cm)
+    # make_fig(waveforms, predicted, labels)
 
 def make_confusion_matrix(cm):
     cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls']
-    # cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
+    cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
     # 行毎に確率値を出して色分け
     cm_prob = cm / np.sum(cm, axis=1, keepdims=True)
     cm = cm[:, :5]
@@ -119,8 +121,8 @@ def make_confusion_matrix(cm):
     plt.rcParams["font.size"] = 7
     sns.heatmap(cm_prob, annot=cm, cmap='GnBu', cbar=False, xticklabels=cm_label_estimate, yticklabels=cm_label, fmt='.10g', square=True, annot_kws={'size':8})
     plt.ylim(cm.shape[0], 0)
-    plt.xlabel('Estimated Label')
-    plt.ylabel('Ground Truth Label')
+    plt.xlabel('Ground Truth Label')
+    plt.ylabel('Estimated Label')
     plt.tight_layout()
     plt.show()
     fig.savefig("confusion_matrix_othercalls_t.pdf")
