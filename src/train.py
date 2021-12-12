@@ -18,6 +18,7 @@ import logger
 import dataset
 from focalloss import *
 from functions import chk
+from util import masked_cross_entropy
 plt.switch_backend("agg")
 
 def parse_cmd_line_arguments():
@@ -50,7 +51,7 @@ def set_random_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 def get_data_loaders(path, batch_size, arch):
-    num_classes = 5
+    num_classes = 8
     trainset = dataset.Mydatasets(p.train, arch)
     valset = dataset.Mydatasets(p.valid, arch)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -112,7 +113,8 @@ if __name__ == "__main__":
     # elif arch == 'cnn':
         # summary(net, input_size=(2, 513, 1000))
 
-    criterion = nn.CrossEntropyLoss()
+    # criterion = nn.CrossEntropyLoss()
+    criterion = masked_cross_entropy
     optimizer = optim.SGD(net.parameters(), lr=args.lr,
                               momentum=0.9, dampening=0,
                               weight_decay=0.0001, nesterov=False)

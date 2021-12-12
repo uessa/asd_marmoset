@@ -45,8 +45,8 @@ def print_cmd_line_arguments(args, log):
 def get_data_loaders(path, batch_size, arch):
     # classes = ('0', '1', '2', '3', '4')
     # num_classes = 5
-    classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13')
-    num_classes = 14
+    classes = ('0', '1', '2', '3', '4')
+    num_classes = 5
     trainset = dataset.Mydatasets(p.train, arch)
     testset = dataset.Mydatasets(p.test, arch)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -108,24 +108,25 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
 
 def make_confusion_matrix(cm):
     cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls']
-    cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
+    # cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
+    # cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Unknown', 'Other Calls']
     # 行毎に確率値を出して色分け
     cm_prob = cm / np.sum(cm, axis=1, keepdims=True)
-    cm = cm[:, :5]
-    cm = cm.T
-    cm_prob = cm_prob[:, :5]
-    cm_prob = cm_prob.T
+    # cm = cm[:, :5]
+    # cm = cm.T
+    # cm_prob = cm_prob[:, :5]
+    # cm_prob = cm_prob.T
 
     fig = plt.figure(figsize=(10, 10))
-    # 2クラス分類：font=25,annot_kws35, 12クラス分類：font=15,annot_kws10, 5クラス分類：font=15,annot_kws20
-    plt.rcParams["font.size"] = 7
-    sns.heatmap(cm_prob, annot=cm, cmap='GnBu', cbar=False, xticklabels=cm_label_estimate, yticklabels=cm_label, fmt='.10g', square=True, annot_kws={'size':8})
+    # 2クラス分類：font=25,annot_kws35, 12クラス分類：font=15,annot_kws10, 5クラス分類：font=15,annot_kws20, cbar=False
+    plt.rcParams["font.size"] = 15
+    sns.heatmap(cm_prob, annot=cm, cmap='GnBu', xticklabels=cm_label, yticklabels=cm_label, fmt='.10g', square=True, annot_kws={'size':20})
     plt.ylim(cm.shape[0], 0)
-    plt.xlabel('Ground Truth Label')
-    plt.ylabel('Estimated Label')
+    plt.xlabel('Estimated Label')
+    plt.ylabel('Ground Truth Label')
     plt.tight_layout()
     plt.show()
-    fig.savefig("confusion_matrix_othercalls_t.pdf")
+    fig.savefig("confusion_matrix.pdf")
 
 def make_fig(waveforms, predicted, labels):
     # Spectrogram_GroundTruthLabel_EstimateLabel

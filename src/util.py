@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import functools
+import torch
+import torch.nn as nn
 
 
 # functions to show an image
@@ -88,3 +90,15 @@ def histoz(data, cdfs=[], mapping_funcs=[]):
 
     data_per = np.reshape(data_tmp2, (data.shape[0], data.shape[1], data.shape[2], data.shape[3]))
     return data_per, cdfs, mapping_funcs
+
+
+def masked_cross_entropy(outputs, labels):
+    f1 = labels == 5
+    f2 = labels == 6
+    f3 = labels == 7
+    flag = f1 | f2 | f3
+    labels[flag] = -1
+            
+    criterion = nn.CrossEntropyLoss(ignore_index=-1)
+    loss = criterion(outputs, labels)
+    return loss
