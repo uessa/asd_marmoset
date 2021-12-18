@@ -120,7 +120,7 @@ def make_confusion_matrix(cm):
     fig = plt.figure(figsize=(10, 10))
     # 2クラス分類：font=25,annot_kws35, 12クラス分類：font=15,annot_kws10, 5クラス分類：font=15,annot_kws20, cbar=False
     plt.rcParams["font.size"] = 15
-    sns.heatmap(cm_prob, annot=cm, cmap='GnBu', xticklabels=cm_label, yticklabels=cm_label, fmt='.10g', square=True, annot_kws={'size':20})
+    sns.heatmap(cm_prob, annot=cm, cmap='GnBu', xticklabels=cm_label, yticklabels=cm_label, fmt='.10g', square=True)
     plt.ylim(cm.shape[0], 0)
     plt.xlabel('Estimated Label')
     plt.ylabel('Ground Truth Label')
