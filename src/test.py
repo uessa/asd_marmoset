@@ -23,6 +23,7 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns
 plt.switch_backend("agg")
 
+
 def parse_cmd_line_arguments():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("set", help="Directory name of dataset")
@@ -43,8 +44,6 @@ def print_cmd_line_arguments(args, log):
 
 
 def get_data_loaders(path, batch_size, arch):
-    # classes = ('0', '1', '2', '3', '4')
-    # num_classes = 5
     classes = ('0', '1', '2', '3', '4')
     num_classes = 5
     trainset = dataset.Mydatasets(p.train, arch)
@@ -54,6 +53,7 @@ def get_data_loaders(path, batch_size, arch):
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                          shuffle=False, num_workers=2, collate_fn=collate_fn)
     return trainloader, testloader, num_classes, classes
+
 
 def collate_fn(batch):
     images, labels = [], []
@@ -80,6 +80,7 @@ def collate_fn(batch):
 
     return images, labels
 
+
 def calculate_accuracy(loader, net, num_classes, classes, log):
     class_correct = list(0. for i in range(num_classes))
     class_total = list(0. for i in range(num_classes))
@@ -99,12 +100,13 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
     precision = np.diag(cm) / np.sum(cm, axis=0)
     f_score = (2 * accuracy * precision) / (accuracy + precision)
     for i in range(num_classes):
-        log('Recall of %5s : %2f %%, Precision : %2f %%, F1-score : %2f %%' 
+        log('Class %5s) Recall : %2f %%, Precision : %2f %%, F1-score : %2f %%' 
             % (classes[i], 100 * accuracy[i], 100 * precision[i], 100 * f_score[i]))
     log('Total accuracy : %2f %%' % (100 * total_accuracy))
 
-    make_confusion_matrix(cm)
+    # make_confusion_matrix(cm)
     # make_fig(waveforms, predicted, labels)
+
 
 def make_confusion_matrix(cm):
     cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls']
@@ -128,6 +130,7 @@ def make_confusion_matrix(cm):
     plt.show()
     fig.savefig("confusion_matrix.pdf")
 
+
 def make_fig(waveforms, predicted, labels):
     # Spectrogram_GroundTruthLabel_EstimateLabel
     predicted = np.squeeze(predicted)
@@ -141,9 +144,8 @@ def make_fig(waveforms, predicted, labels):
     ref = np.median(np.abs(waveforms))
     powspec = librosa.amplitude_to_db(np.abs(waveforms), ref=ref)
     powspec = np.squeeze(powspec)
-    plt.figure(figsize=(10,10))
-    plt.subplot(2, 1, 1)
-    plt.title('Spectrogram', fontsize=18)
+    fig, ax = plt.subplots(3, 1, figsize=(10,10), gridspec_kw={'height_ratios': [3, 2, 2]})
+    ax[0].set_title('Spectrogram', fontsize=24)
     librosa.display.specshow(
         powspec,
         sr=96000,
@@ -153,18 +155,18 @@ def make_fig(waveforms, predicted, labels):
         x_axis="time",
         y_axis="hz",
         norm=Normalize(vmin=-10, vmax=2),
+        ax=ax[0],
     )
-    plt.xlim(200, 250)
-    plt.xticks([200, 210, 220, 230, 240, 250], [200, 210, 220, 230, 240, 250])
-    plt.yticks([0, 10000, 20000, 30000, 40000, 48000], [0, 10, 20, 30, 40, 48])
-    plt.xlabel('Time [s]', fontsize=18)
-    plt.ylabel('Frequency [kHz]', fontsize=18)
-    plt.tick_params(labelsize=16)
+    ax[0].set_xlim(200, 250)
+    # ax[0].set_xticks([200, 210, 220, 230, 240, 250], [200, 210, 220, 230, 240, 250])
+    ax[0].set_xticklabels([200, "", 210, "", 220, "", 230, "", 240, "", 250])
+    ax[0].set_yticklabels([0, 20, 40])
+    ax[0].set_ylabel('Frequency [kHz]', fontsize=24)
+    ax[0].tick_params(labelsize=22)
     # plt.colorbar(format="%+2.0fdB")
 
     # 正解ラベル
-    plt.subplot(4, 1, 3)
-    plt.title('Ground Truth Label', fontsize=18)
+    ax[1].set_title('Ground Truth Label', fontsize=24)
     color_label = {0:"black", 1:"crimson", 2:"darkgreen", 3:"mediumblue", 4:"gold"}
     call_label = {0:"No Call", 1:"Phee", 2:"Trill", 3:"Twitter", 4:"Other Calls"}
     for i in range(max(labels)):
@@ -178,10 +180,10 @@ def make_fig(waveforms, predicted, labels):
                     j = j + 1
                 end_call = j + 1
                 if first_plot:
-                    plt.plot(time[start_call : end_call], labels_convert[start_call : end_call], linestyle="solid", linewidth=0.8, color=color_label[i+1], label=call_label[i+1])
+                    ax[1].plot(time[start_call : end_call], labels_convert[start_call : end_call], linestyle="solid", linewidth=0.8, color=color_label[i+1], label=call_label[i+1])
                     first_plot = False
                 else:
-                    plt.plot(time[start_call : end_call], labels_convert[start_call : end_call], linestyle="solid", linewidth=0.8, color=color_label[i+1])
+                    ax[1].plot(time[start_call : end_call], labels_convert[start_call : end_call], linestyle="solid", linewidth=0.8, color=color_label[i+1])
             else:
                 j = j + 1
 
@@ -196,26 +198,25 @@ def make_fig(waveforms, predicted, labels):
                     break
             end_no_call = k - 1
             if first_plot:
-                plt.plot(time[start_no_call : end_no_call], labels[start_no_call : end_no_call], linestyle="solid", linewidth=0.8, color=color_label[0], label=call_label[0])
+                ax[1].plot(time[start_no_call : end_no_call], labels[start_no_call : end_no_call], linestyle="solid", linewidth=0.8, color=color_label[0], label=call_label[0])
                 first_plot = False
             else:
-                plt.plot(time[start_no_call : end_no_call], labels[start_no_call : end_no_call], linestyle="solid", linewidth=0.8, color=color_label[0])
+                ax[1].plot(time[start_no_call : end_no_call], labels[start_no_call : end_no_call], linestyle="solid", linewidth=0.8, color=color_label[0])
         else:
             k = k + 1
             if k >= len(labels):
                 break
     # plt.plot(time, labels/4)
     # plt.plot(time, predicted*0.8, linewidth=1)
-    plt.xlim(200, 250)
+    ax[1].set_xlim(200, 250)
     # plt.yticks([0, 0.25, 0.5, 0.75, 1.0], ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls'])
-    plt.yticks([0, 1.0], ['No Call', 'Call'])
-    plt.legend(loc='upper right')
-    plt.xlabel('Time [s]', fontsize=18)
-    plt.tick_params(labelsize=16)
+    # ax[1].set_yticks([0, 1.0], ['No Call', 'Call'])
+    ax[1].set_yticklabels(['No Call', '', 'Call'])
+    ax[1].legend(loc='upper right', fontsize='18')
+    ax[1].tick_params(labelsize=22)
 
     # 推定ラベル
-    plt.subplot(4, 1, 4)
-    plt.title('Estimated Label', fontsize=18)
+    ax[2].set_title('Estimated Label', fontsize=24)
     for i in range(max(predicted)):
         first_plot = True
         predicted_convert = (predicted == (i+1))
@@ -227,10 +228,10 @@ def make_fig(waveforms, predicted, labels):
                     j = j + 1
                 end_call = j + 1
                 if first_plot:
-                    plt.plot(time[start_call : end_call], predicted_convert[start_call : end_call], linestyle="solid", linewidth=0.8, color=color_label[i+1], label=call_label[i+1])
+                    ax[2].plot(time[start_call : end_call], predicted_convert[start_call : end_call], linestyle="solid", linewidth=0.8, color=color_label[i+1], label=call_label[i+1])
                     first_plot = False
                 else:
-                    plt.plot(time[start_call : end_call], predicted_convert[start_call : end_call], linestyle="solid", linewidth=0.8, color=color_label[i+1])
+                    ax[2].plot(time[start_call : end_call], predicted_convert[start_call : end_call], linestyle="solid", linewidth=0.8, color=color_label[i+1])
             else:
                 j = j + 1
 
@@ -245,24 +246,26 @@ def make_fig(waveforms, predicted, labels):
                     break
             end_no_call = k - 1
             if first_plot:
-                plt.plot(time[start_no_call : end_no_call], predicted[start_no_call : end_no_call], linestyle="solid", linewidth=0.8, color=color_label[0], label=call_label[0])
+                ax[2].plot(time[start_no_call : end_no_call], predicted[start_no_call : end_no_call], linestyle="solid", linewidth=0.8, color=color_label[0], label=call_label[0])
                 first_plot = False
             else:
-                plt.plot(time[start_no_call : end_no_call], predicted[start_no_call : end_no_call], linestyle="solid", linewidth=0.8, color=color_label[0])
+                ax[2].plot(time[start_no_call : end_no_call], predicted[start_no_call : end_no_call], linestyle="solid", linewidth=0.8, color=color_label[0])
         else:
             k = k + 1
             if k >= len(labels):
                 break
     # plt.plot(time, predicted/4)
-    plt.xlim(200, 250)
+    ax[2].set_xlim(200, 250)
     # plt.yticks([0, 0.25, 0.5, 0.75, 1.0], ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls'])
-    plt.yticks([0, 1.0], ['No Call', 'Call'])
-    plt.legend(loc='upper right')
-    plt.xlabel('Time [s]', fontsize=18)
-    plt.tick_params(labelsize=16)
+    # ax[2].set_yticks([0, 1.0], ['No Call', 'Call'])
+    ax[2].set_yticklabels(['No Call', '', 'Call'])
+    ax[2].legend(loc='upper right', fontsize='18')
+    ax[2].set_xlabel('Time [s]', fontsize=24)
+    ax[2].tick_params(labelsize=22)
     plt.tight_layout()
     plt.savefig("spec_labels.pdf")
     plt.show()
+
 
 if __name__ == "__main__":
     args = parse_cmd_line_arguments()
@@ -272,9 +275,7 @@ if __name__ == "__main__":
     p_model_parent = p_model.parent
     log = logger.Logger(p_model_parent / 'log_accuracy')
     print_cmd_line_arguments(args, log)
-    
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
     trainloader, testloader, num_classes, classes = get_data_loaders(p, args.batch_size, arch)
 
     net = model.NetworkCNN()

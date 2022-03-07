@@ -31,8 +31,10 @@ class NetworkDNN(nn.Module):
             nn.Linear(ch4, ch_out),
         )
 
+
     def forward(self, x):
         return self.net(x)
+
 
 class NetworkCNN(nn.Module):
     def __init__(self):
@@ -80,6 +82,7 @@ class NetworkCNN(nn.Module):
             nn.ReLU(),
             nn.BatchNorm2d(ch_out),
         )
+
 
     def forward(self, x):
         return self.net(x)

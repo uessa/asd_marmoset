@@ -18,6 +18,7 @@ class Mydatasets(torch.utils.data.Dataset):
         if self.arch == 'cnn':
             return self.datanum
 
+
     def __getitem__(self, idx):
         if self.arch == 'cnn':
             self.outdata_spec, self.outdata_label = self.getonesample(idx)
@@ -26,9 +27,8 @@ class Mydatasets(torch.utils.data.Dataset):
             self.outdata_label = torch.from_numpy(self.outdata_label).long()
             return self.outdata_spec, self.outdata_label
 
+
     def getonesample(self, idx):
-        # out_data = self.data[idx]
-        # out_label = self.label[idx]
         path_spec = self.list_spec[idx]
         path_label = self.list_label[idx]
         outdata_spec = np.load(path_spec)
@@ -39,6 +39,7 @@ class Mydatasets(torch.utils.data.Dataset):
             out_data = self.transform(out_data)
 
         return outdata_spec, outdata_label
+
 
 if __name__ == "__main__":
     p = path.path('subset_marmoset_23ue')

@@ -38,17 +38,20 @@ def parse_cmd_line_arguments():
                         default=0.1)
     return parser.parse_args()
 
+
 def print_cmd_line_arguments(args, log):
     log('-----Parameters-----')
     for key, item in args.__dict__.items():
         log(str(key) + ': ' + str(item))
     log('--------------------')
 
+
 def set_random_seed(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+
 
 def get_data_loaders(path, batch_size, arch):
     num_classes = 8
@@ -59,6 +62,7 @@ def get_data_loaders(path, batch_size, arch):
     valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size,
                                              shuffle=False, num_workers=2, collate_fn=collate_fn)
     return trainloader, valloader, num_classes
+
 
 def collate_fn(batch):
     images, labels = [], []
@@ -82,8 +86,10 @@ def collate_fn(batch):
     labels = torch.stack(labels, dim=0)
     return images, labels
 
+
 def save_model(model, path):
     torch.save(model.state_dict(), path.model / 'model.pth')
+
 
 def show_history(train_accuracy, val_accuracy):
     plt.plot(range(len(train_accuracy)), train_accuracy,
