@@ -3,6 +3,7 @@
 # 仮想環境の準備
 1. 学習用ルートディレクトリの名前と置く場所を決める
     - 例: ホームディレクトリ ~/ に chainer_test という名前で置く
+
 1. 置く場所に chainer_template を clone する
    ``` shell
    $ cd ~/
@@ -37,124 +38,69 @@
 	```
 
 
-# データセットの準備
-- Notes:
-	- コードブロックはコマンドの例を示し，以下の表記を用いる
-	- 元のデータセット名: database
-	- データセット名: dataset1
-	- サブデータセット: subset1
-	- 引数を取る .py については，`python xxx.py --help` でヘルプが表示される
+# データセットの作成
+1. /vad_marmoset/raw/ 配下に2つフォルダを作成し，それぞれに音声データ（wavファイル）と正解データ（txtファイル）を配置
+	- フォルダ作成
+	```
+	$ mkdir marmoset_wav
+	$ mkdir marmoset_text
+	```
+	- データをコピー（/datanet/projects/MarmoCall/音声共有_国立精神/あやぴょん/Annotation_text_files）
+	```
+	$ cp *.wav /vad_marmoset/raw/marmoset_wav
+	$ cp *.txt /vad_marmoset/raw/marmoset_text
+	```
 
-## データとラベルの準備
-- 作業一覧
-	- 元のデータセットから，使用するデータをコピーし，生データのデータセットを用意する
-	- 必要に応じてラベルも用意する
-		- ラベルが特徴量に依存する場合（フレーム毎の推定など），ここでは用意しない
-		- データに依存する場合は，ここで用意しても良い
+1. 正解ラベルの作成
+	- /raw/marmoset_text に make_label.py を配置
+	- make_label.pyを実行
+	- labelフォルダが作成され，その中に正解ラベルが保存
 
-1. データセットの配置
-	- root/raw/ 以下にデータセット名のディレクトリを作成し，データを配置する
+1. 正解ラベルを /raw/marmoset_wav へコピー
+	- wavデータと正解ラベルのtextデータが混在する状態へ
 
-		``` shell
-		$ mkdir raw/dataset1
-		$ cp database/*.wav raw/dataset1/.
-		```
+1. /vad_marmoset/datasets/ 配下にtrain, valid, testに分けるサブセット用のフォルダ作成
+	- フォルダ作成
+	```
+	$ mkdir subset_marmoset
+	```
 
-1. ラベルの配置
-	- 同ディレクトリにラベルを配置する
-	- 各データとラベルは拡張子を除き，ファイル名が一致している必要がある (例: data1.wavのラベルはdata1.txt)
-	- Note: ラベルに関しては自動化できないため，各自でいい感じにすること
+1. /datasets/subset_marmoset 配下に raw フォルダ作成
+	- フォルダ作成
+	```
+	$ mkdir raw
+	```
 
-- データセットの中身の例
+1. データをランダムに振り分ける
+	- src/dataset/sample_data_randomize.sh を実行
+	- data_randomize.pyが実行され，/datasets/subset_marmoset/makelink.shが生成
+	- makelink.sh を実行
+	- /datasets/subset_marmoset/ に train, valid, test のフォルダが生成され，それぞれに正解ラベルが保存
+	- /datasets/subset_marmoset/raw/ に train, valid, test のフォルダが生成され，それぞれに音声データが格納
 
-   	``` shell
-   	$ ls raw/dataset1
-   	data1.wav data1.txt data2.wav data2.txt data3.wav data3.txt ...
-   	```
-
-## サブデータセットの作成
-- 作業一覧
-	- データを training, validation, test に分けたサブデータセットを作成
-	- README を用意
-
-1. サブデータセット用のディレクトリ作成
-
-   	``` shell
-   	$ mkdir dataset/subset1
-   	```
-
-1. データの分割方法などを dataset/README に記載
-	1. subset1 の説明を記載
-		1. 各データの分割比を記載
-			- (train : valid : test) = (7, 1, 2) など
-		1. 分割方法を記載
-			- ランダム
-			- xx が oo になるように分割，など
-
-1. データを分割
-	- 方法1: 頑張って分割する
-	- 方法2: ランダムに分割する場合は以下を実行
-	1. src/dataset/data_randomize.py arg1 arg2 arg3 arg4を実行，データを分割するシェルスクリプトを作成
-		- arg1: dataset1 への絶対パス
-		- arg2: subset1/raw への絶対パス
-		- arg3: データセット分割の比率
-		- arg4 dataset1 にラベルがあり，データの分割に合わせてラベルも自動で移動する場合は1
-		- 使い方は src/dataset/sample_data_randomize.sh を参照
-		- パラメータを変えて，./sample_data_randomize.sh でもよい
-
-    		``` shell
-	    	$ cd src/dataset
-     		$ emacs -nw sample_data_randomize.sh
-    		$ ./sample_data_randomize.sh
-    		$ cd ../..
-    		```
-		- 注意: dataset1 に .wav ではなく，特徴量 .npy を配置している場合は，arg2 を subset1 への絶対パスにする
-
-	1. dataset/subset1/makelink.sh を実行，データを分割する
-
-		``` shell
-		$ ./dataset/subset1/makelink.sh
-		```
-
-## 特徴量抽出
-- 作業一覧
-	- 特徴量を抽出
-	- 特徴量に対応するラベルを配置
-
-1. 特徴量抽出
-	- src/dataset/makedata.py subset1 を実行，特徴量を抽出
-	- src/dataset/sample_makedata.sh を参考
-	- 主に指定するオプション引数は以下の通り
-		- -l fftlen (fftlen: 窓長 [sample], e.g., 1024)
-		- -s fftshift (fftshift: シフト幅 [sample], e.g., 512)
-		- -w window (window: 窓関数, e.g., hamming)
-
-			``` shell
-			$ cd /src/dataset
-			$ emacs -nw sample_makedata.sh
-    		$ ./sample_makedata.sh
-			$ cd ../..
-    		```
-		- 注意: makedata.py が抽出するのは abs(STFT(data))
-		- 変更したい場合は，61行目の wav2spc を任意の特徴量抽出を行う関数に変更する
-		- また，101行目（最終行）の wav2spc.py も変更した関数名にする
-		- wav2spc.py も参照
-	- 確認してみる
-	    ``` shell
-		$ cat dataset/subset1/log
-		```
-
-
-2. ラベルの配置
-	- 特徴量に対応するラベルを配置
-	- ただし，raw/dataset1 にラベルを配置し，かつ，data_randomize.py の arg4 に 1 を与えている場合は自動で配置されている
+1. スペクトログラムを抽出
+	- src/dataset/sample_makedata.sh を実行
+	- /datasets/subset_marmoset/ の train, valid, test フォルダそれぞれにスペクトログラムが保存
 
 
 # 学習
-- 作業一覧
-	- 学習する
+1. 学習
+    - /src/train.py を実行（約24時間分のデータに対して学習約10時間）
+    ```
+    $ nohup python train.py subset_marmoset --batch_size 2 --lr 0.01 > out.log 2> err.log < /dev/null &
+    ```
+    - model は models/subset_marmoset/trial* に保存
+	- 学習に使用するコード
+		- dataset.py：学習に入力するデータセットの作成
+		- train.py：学習
+		- test.py：テストし正答率を出す
+		- model.py：ネットワークの構造
+		- path.py：パスの管理
+		- logger.py：ログの書き出し
+		- trainer.py, util.py：学習に必要なコード
 
-1. src/train_network.py を用いて学習
-	- sample_train_network_arch{1,2}.sh を参考に学習
-	- model は models/subset1/trial* に
-	- test に対する推定結果は results/subset1/trial に保存される
+1. テスト
+	- test.py を実行
+	```
+    $ python test.py subset_marmoset --model ../models/subset_marmoset/trial*/model.pth --batch_size 2
+    ```
