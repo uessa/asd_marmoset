@@ -26,10 +26,10 @@ if __name__ == "__main__":
     marmo_eng = {**ue_eng, **sal_eng, **vpa_eng, **vpakids_eng}
     call_label = {0: "No Call", 1: "Phee", 2: "Trill", 3: "Twitter", 4: "Other Calls"}
 
-    is_plot = 1 # if plot on/off
-    pdf = PdfPages('23ue_test_5ue.pdf') # filename
-    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue/test_tested/" # GroundTruth frame .txt Path
-    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue/test_tested/results/" # Estimate frame .txt Path
+    is_plot = 1 # plot on/off
+    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa_check_othercalls/test/" # GroundTruth frame .txt Path
+    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa_check_othercalls/test/results/" # Estimate frame .txt Path
+    pdf = PdfPages(labelpath + '23ue_test_5ue.pdf') # filename
 
     files = [f for f in os.listdir(labelpath) if os.path.isfile(os.path.join(labelpath, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
     results = [f for f in os.listdir(resultpath) if os.path.isfile(os.path.join(resultpath, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
@@ -59,20 +59,21 @@ if __name__ == "__main__":
 
         if is_plot: #is_plot = 1でプロット
 
-            plt.figure(figsize=(50,3),dpi=400)
+            # sec translate
             fftlen = 2048 # frame length
             fs = 96000 # sampling rate
             stime = fftlen / 2 / fs # frame -> sec translated
-
             label_sec = np.arange(len(label)) * stime
             results_sec = np.arange(len(results)) * stime
 
-            x_min = 0
+            # frame plot option
+            x_min = 0 # min_sec
             x_max = len(label) * stime # max_sec
+            lw = 0.5 # plot line width
+            plt.figure(figsize=(50,3),dpi=400) # plot figure size
+            title = "{} (weeks={}, acc={}%)".format(marmo_eng[name[0]], date[0], acc) # plot title
 
-            lw = 0.5 # line width
-            title = "{} (weeks={}, acc={}%)".format(marmo_eng[name[0]], date[0], acc) # hassaku (weeks=11, acc=95.1%)
-
+            # plot1
             plt.subplot(2, 1, 1)
             plt.plot(label_sec, label == 1, "b",label="1:"+call_label[1],lw=lw)
             plt.plot(label_sec, label == 2, "g",label="2:"+call_label[2],lw=lw)
@@ -83,6 +84,7 @@ if __name__ == "__main__":
             plt.title(title)
             plt.ylabel("G.T.")
 
+            # plot2
             plt.subplot(2, 1, 2)
             plt.plot(results_sec, results == 1, "b",label="1:"+call_label[1],lw=lw)
             plt.plot(results_sec, results == 2, "g",label="2:"+call_label[2],lw=lw)
@@ -92,12 +94,11 @@ if __name__ == "__main__":
             plt.yticks([0,1],["NoCall","Call"])
             plt.ylabel("Est.")
             plt.legend(bbox_to_anchor=(1, -.2), loc='upper right', ncol=4)
-            
-
             plt.xlabel("Time (sec) ")
-            plt.tight_layout()
 
-            pdf.savefig()
+            # plot option after plot1,2
+            plt.tight_layout() # plot layout spacing
+            pdf.savefig() # plot to PDF saving
             # dirpath = labelpath + "show_frames/"
             # os.makedirs(dirpath, exist_ok=True)
 
