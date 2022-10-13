@@ -10,12 +10,16 @@ import itertools
 import math
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
+import pandas as pd
 
 np.seterr(divide='raise')
 
+# 混合行列作成
 def make_confusion_matrix(labels, results, classes, output_dir, filename):
-    cm = confusion_matrix(labels, results, classes)
     cm_label = ["No Call", "Phee", "Trill", "Twitter", "Other Calls"]
+    cm = confusion_matrix(labels, results, classes)
+    # cm = pd.DataFrame(data=cm, index=cm_label, columns=cm_label)
+    print(cm)
 
     # cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 
     #                        'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
@@ -39,11 +43,14 @@ def make_confusion_matrix(labels, results, classes, output_dir, filename):
         xticklabels=cm_label,
         yticklabels=cm_label,
         fmt=".10g",
+        center=0
         # square=True,
     )
-    plt.ylim(cm.shape[0], 0)
+    # sns.heatmap(cm, center=0)
     plt.xlabel("Estimated Label")
     plt.ylabel("Ground Truth Label")
+    plt.yticks(rotation=90,rotation_mode="anchor",ha="center",va="baseline")
+    plt.ylim(5, 0)
     plt.title(filename)
     plt.tight_layout()
 
@@ -73,10 +80,8 @@ if __name__ == "__main__":
     call_label = {0: "No Call", 1: "Phee", 2: "Trill", 3: "Twitter", 4: "Other Calls"} # ラベル番号の辞書
     call_init = {v: 0 for k,v in call_label.items()} # カウント用辞書
 
-    is_plot = 1 #プロットするかどうか
-
-    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_check_othercalls/test/" # GroundTruth frame .txt Path
-    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_check_othercalls/test//results/" # Estimate frame .txt Path
+    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa_check_othercalls/test/" # GroundTruth frame .txt Path
+    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa_check_othercalls/test//results/" # Estimate frame .txt Path
     outputpath = labelpath
 
     files = [f for f in os.listdir(labelpath) if os.path.isfile(os.path.join(labelpath, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
@@ -136,22 +141,24 @@ if __name__ == "__main__":
         # list_label.append((name[0], float(date[0]), num_label)) # listにtupleとして追加していく
         # list_results.append((name[0], float(date[0]), num_results)) # listにtupleとして追加していく
 
-        
+        break
 
+
+    is_plot = 0 #プロットするかどうか
 
     # listをtupleの要素でsortしておく
     list_label.sort(key = lambda x: x[1]) # 2番目の要素＝週でsort
     list_label.sort() # 1番目の要素=名前でsort
     list_results.sort(key = lambda x: x[1]) # 2番目の要素＝週でsort
     list_results.sort() # 1番目の要素=名前でsort
-
+    
     if is_plot: 
         
         # 個体名ごと
         for lname in lnames:
         
             # ラベル名ごと
-            for fname in tests:
+            for fname in vpas:
 
                 week = np.empty(0,dtype=int)
                 count_label = []
