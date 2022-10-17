@@ -43,27 +43,34 @@ def write_label(list_file):
                 Marmoset += ['2'] * (ed_frame_marmoset - st_frame + 1)
             elif 'twitter' in t[2].lower():
                 Marmoset += ['3'] * (ed_frame_marmoset - st_frame + 1)
+            # elif 'phee-trill' in t[2].lower():
+            #     Marmoset += ['4'] * (ed_frame_marmoset - st_frame + 1)
+            # elif 'trill-phee' in t[2].lower():
+            #     Marmoset += ['5'] * (ed_frame_marmoset - st_frame + 1)
+            # elif 'tsik' in t[2].lower() and len(t[2]) < 6:
+            #     Marmoset += ['6'] * (ed_frame_marmoset - st_frame + 1)
+            # elif 'ek' in t[2].lower() and len(t[2]) < 4:
+            #     Marmoset += ['7'] * (ed_frame_marmoset - st_frame + 1)
+            # elif 'ek-tsik' in t[2].lower():
+            #     Marmoset += ['8'] * (ed_frame_marmoset - st_frame + 1)
+            # elif 'cough' in t[2].lower():
+            #     Marmoset += ['9'] * (ed_frame_marmoset - st_frame + 1)
+            # elif 'cry' in t[2].lower():
+            #     Marmoset += ['10'] * (ed_frame_marmoset - st_frame + 1)
+            # elif 'chatter' in t[2].lower():
+            #     Marmoset += ['11'] * (ed_frame_marmoset - st_frame + 1)
+            # elif 'breath' in t[2].lower():
+            #     Marmoset += ['12'] * (ed_frame_marmoset - st_frame + 1)
+            # elif 'unknown' in t[2].lower():
+            #     Marmoset += ['13'] * (ed_frame_marmoset - st_frame + 1)
             elif 'phee-trill' in t[2].lower():
-                Marmoset += ['4'] * (ed_frame_marmoset - st_frame + 1)
-            elif 'trill-phee' in t[2].lower():
                 Marmoset += ['5'] * (ed_frame_marmoset - st_frame + 1)
-            elif 'tsik' in t[2].lower() and len(t[2]) < 6:
+            elif 'trill-phee' in t[2].lower():
                 Marmoset += ['6'] * (ed_frame_marmoset - st_frame + 1)
-            elif 'ek' in t[2].lower() and len(t[2]) < 4:
-                Marmoset += ['7'] * (ed_frame_marmoset - st_frame + 1)
-            elif 'ek-tsik' in t[2].lower():
-                Marmoset += ['8'] * (ed_frame_marmoset - st_frame + 1)
-            elif 'cough' in t[2].lower():
-                Marmoset += ['9'] * (ed_frame_marmoset - st_frame + 1)
-            elif 'cry' in t[2].lower():
-                Marmoset += ['10'] * (ed_frame_marmoset - st_frame + 1)
-            elif 'chatter' in t[2].lower():
-                Marmoset += ['11'] * (ed_frame_marmoset - st_frame + 1)
-            elif 'breath' in t[2].lower():
-                Marmoset += ['12'] * (ed_frame_marmoset - st_frame + 1)
             elif 'unknown' in t[2].lower():
-                Marmoset += ['13'] * (ed_frame_marmoset - st_frame + 1)
-            
+                Marmoset += ['7'] * (ed_frame_marmoset - st_frame + 1)    
+            else:
+                Marmoset += ['4'] * (ed_frame_marmoset - st_frame + 1)        
 
     # 音声終了までのフレームを0で埋める, 末尾zero padding込
     if len(Marmoset) < n_frame:
@@ -93,8 +100,8 @@ def write_label_para(list_data):
 
 if __name__ == "__main__":
     # path
-    path_text = pathlib.Path("/home/muesaka/projects/marmoset/raw/marmoset_23ue_text")
-    path_wav = pathlib.Path("/home/muesaka/projects/marmoset/raw/marmoset_23ue_wav")
+    path_text = pathlib.Path("/home/muesaka/projects/marmoset/raw/marmoset_11vpa_text")
+    path_wav = pathlib.Path("/home/muesaka/projects/marmoset/raw/marmoset_11vpa_wav")
     (path_text / 'label').mkdir(exist_ok=True)
 
     # Get file list
