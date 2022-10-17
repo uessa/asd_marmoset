@@ -16,31 +16,22 @@ np.seterr(divide='raise')
 
 # 混合行列作成
 def make_confusion_matrix(results, labels, classes, output_dir, name, date):
-    cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
+    # cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
+    cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls', 'Phee-Trill', 'Trill-Phee', 'Unknown']
     cm_label = ['No Call', 'Phee', 'Trill', 'Twitter','Other Calls']
-    
-    cm = confusion_matrix(labels, results, [0,1,2,3,4,5,6,7,8,9,10,11,12,13]) # labelとresult反転 14クラスの混合行列
+    classes = np.arange(8)
+        
+    cm = confusion_matrix(labels, results, classes) # labelとresult反転 14クラスの混合行列 ## 
     cm = np.delete(cm, slice(len(cm_label), len(cm_label_estimate)), 0) # 0-4行目を除く行を削除
-    print(len(cm_label))
-    print(len(cm_label_estimate))
-    print(cm)
-    print(type(cm))
-
-    
+    print(name,date,cm)
 
     # 行毎に確率値を出して色分け
-    cm_prob = cm / np.sum(cm, axis=1, keepdims=True)
+    # cm_prob = cm / np.sum(cm, axis=1, keepdims=True)
 
-    # cm = cm[:, :5]
-    # cm = cm.T
-    # cm_prob = cm_prob[:, :5]
-    # cm_prob = cm_prob.T
-
-    # 2クラス分類：font=25,annot_kws35, 12クラス分類：font=15,annot_kws10, 5クラス分類：font=15,annot_kws20, cbar=False
-    fig = plt.figure(figsize=(20, 8))
+    fig = plt.figure(figsize=(17, 5))
     plt.rcParams["font.size"] = 15
     sns.heatmap(
-        cm_prob,
+        cm,
         annot=cm,
         cmap="GnBu",
         xticklabels=cm_label_estimate,
@@ -51,15 +42,15 @@ def make_confusion_matrix(results, labels, classes, output_dir, name, date):
 
     plt.ylabel("Estimated Label")
     plt.xlabel("Ground Truth Label")
-    plt.yticks(rotation=90,rotation_mode="anchor",ha="center",va="baseline")
-    plt.xticks(rotation=0,)
+    plt.yticks(rotation=0,rotation_mode="anchor",ha="right",)
+    plt.xticks(rotation=30,)
     plt.ylim(5, 0)
     plt.title(name + " (" + date + " weeks) ")
     plt.tight_layout()
 
     dirpath = output_dir + "confusion_matrix/"
     os.makedirs(dirpath, exist_ok=True)
-    filename = dirpath + "ConfMat_" + name + "_" + date + ".pdf"
+    filename = dirpath + "confusion_" + name + "_" + date + ".pdf"
     fig.savefig(filename)
     plt.close()
 
@@ -83,8 +74,11 @@ if __name__ == "__main__":
     call_label = {0: "No Call", 1: "Phee", 2: "Trill", 3: "Twitter", 4: "Other Calls"} # ラベル番号の辞書
     call_init = {v: 0 for k,v in call_label.items()} # カウント用辞書
 
-    labelpath = "/home/muesaka/projects/marmoset/src/others/test/test/" # GroundTruth frame .txt Path
-    resultpath = "/home/muesaka/projects/marmoset/src/others/test/results/" # Estimate frame .txt Path
+    # labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa/test_wo_pheetrill/" # GroundTruth frame .txt Path
+    # resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa/test/results/" # Estimate frame .txt Path
+    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_hkawauchi/test_wo_pheetrill/labels/" # GroundTruth frame .txt Path
+    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_hkawauchi/test_wo_pheetrill/results/" # Estimate frame .txt Path
+
     outputpath = labelpath
 
     files = [f for f in os.listdir(labelpath) if os.path.isfile(os.path.join(labelpath, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
@@ -116,6 +110,6 @@ if __name__ == "__main__":
         # confusion matrix
         name = marmo_eng[name[0]]
         date = date[0]
-        make_confusion_matrix(label, results, [0,1,2,3,4], labelpath, name, date)
+        make_confusion_matrix(label, results, [0,1,2,3,4], labelpath, name, date) # 01234567...13, 01234
         
-        break
+        
