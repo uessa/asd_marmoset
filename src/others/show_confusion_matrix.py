@@ -11,105 +11,101 @@ import math
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import pandas as pd
+import pathlib
 
-np.seterr(divide='raise')
-
-# 混合行列作成
-def make_confusion_matrix(results, labels, classes, output_dir, name, date):
-    # cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
-    cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls', 'Phee-Trill', 'Trill-Phee', 'Unknown']
-    cm_label = ['No Call', 'Phee', 'Trill', 'Twitter','Other Calls']
-    classes = np.arange(8)
+# 混同行列作成
+def make_confusion_matrix(label, pred, num_classes, outputpath, name, date): # 
+    # cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
+    cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls', 'Phee-Trill', 'Trill-Phee', 'Unknown']
+    cm_pred = ['No Call', 'Phee', 'Trill', 'Twitter','Other Calls']
+    classes = np.arange(num_classes)
         
-    cm = confusion_matrix(labels, results, classes) # labelとresult反転 14クラスの混合行列 ## 
-    cm = np.delete(cm, slice(len(cm_label), len(cm_label_estimate)), 0) # 0-4行目を除く行を削除
-    print(name,date,cm)
+    cm = confusion_matrix(pred, label, classes) # num_classes^2 の混同行列の作成
+    cm = np.delete(cm, slice(len(cm_pred), len(cm_label)), 0) # cm_predの次元数に合わせてcmの行を削除
+    print(name, date, cm)
 
     # 行毎に確率値を出して色分け
     # cm_prob = cm / np.sum(cm, axis=1, keepdims=True)
 
-    fig = plt.figure(figsize=(17, 5))
+    fig = plt.figure(figsize=(12, 5))
     plt.rcParams["font.size"] = 15
     sns.heatmap(
         cm,
         annot=cm,
         cmap="GnBu",
-        xticklabels=cm_label_estimate,
-        yticklabels=cm_label,
+        xticklabels=cm_label,
+        yticklabels=cm_pred,
         fmt=".10g",
         # square=True,
     )
 
     plt.ylabel("Estimated Label")
-    plt.xlabel("Ground Truth Label")
+    plt.xlabel("Manually atattched Label")
     plt.yticks(rotation=0,rotation_mode="anchor",ha="right",)
     plt.xticks(rotation=30,)
-    plt.ylim(5, 0)
-    plt.title(name + " (" + date + " weeks) ")
+    plt.ylim(len(cm_pred), 0)
+    title = "{} ({} weeks) ".format(name, date)
+    plt.title(title)
     plt.tight_layout()
 
-    dirpath = output_dir + "confusion_matrix/"
-    os.makedirs(dirpath, exist_ok=True)
-    filename = dirpath + "confusion_" + name + "_" + date + ".pdf"
+    outputpath = outputpath / "confusion_matrix"
+    os.makedirs(outputpath, exist_ok=True)
+    filename = outputpath / "confusion_{}_{}.pdf".format(name, date)
     fig.savefig(filename)
     plt.close()
+    print("save: {}".format(filename))
 
 if __name__ == "__main__":
 
+    # 個体名の英語辞書
     ue_eng = {"カルビ": "kalbi", "あいぴょん": "aipyon", "あやぴょん": "ayapyon", 
               "あさぴょん": "asapyon", "真央": "mao", "ブラウニー": "brownie", 
-              "ビスコッティ": "biscotti",  "ビスコッティー": "biscotti", "ビスコッテイー": "biscotti", "ビスコッテイ": "biscotti",
-              "花月": "kagetsu", "黄金": "kogane", 
-              "阿伏兎":"abuto", "スカイドン":"skydon", "ドラコ":"dorako", "テレスドン":"telesdon", 
+              "ビスコッティー": "biscotti", "ビスコッテイー": "biscotti", 
+              "花月": "kagetsu", "黄金": "kogane", "阿伏兎":"abuto", "スカイドン":"skydon", 
+              "ドラコ":"dorako", "テレスドン":"telesdon", "イカ玉":"ikatama", "梨花":"rika", "信成":"nobunari",
               "三春":"miharu", "会津":"aizu", "鶴ヶ城":"tsurugajo", "マティアス":"matias",
-              "ミコノス":"mikonos", "エバート":"ebert", "マルチナ":"martina", "ぶた玉":"butatama",
-              "イカ玉":"ikatama", "梨花":"rika", "信成":"nobunari",}
+              "ミコノス":"mikonos", "エバート":"ebert", "マルチナ":"martina", "ぶた玉":"butatama",}
     sal_eng = {"サブレ": "sable", "スフレ": "souffle",}
-    vpa_eng = {"平磯": "hiraiso", "阿字ヶ浦": "azigaura", "高萩": "takahagi", "三崎": "misaki",
-               "馬堀": "umahori", "八朔": "hassaku", "日向夏": "hyuganatsu", "桂島": "katsurashima",
-               "松島": "matsushima",}
+    vpa_eng = {"平磯": "hiraiso", "阿字ヶ浦": "azigaura", "高萩": "takahagi", "三崎": "misaki","馬堀": "umahori", 
+               "八朔": "hassaku", "日向夏": "hyuganatsu", "桂島": "katsurashima","松島": "matsushima",}
     vpakids_eng = {"つぐみ": "tsugumi", "ひばり": "hibari",}
     marmo_eng = {**ue_eng, **sal_eng, **vpa_eng, **vpakids_eng}
 
-    call_label = {0: "No Call", 1: "Phee", 2: "Trill", 3: "Twitter", 4: "Other Calls"} # ラベル番号の辞書
-    call_init = {v: 0 for k,v in call_label.items()} # カウント用辞書
-
-    # labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa/test_wo_pheetrill/" # GroundTruth frame .txt Path
-    # resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa/test/results/" # Estimate frame .txt Path
-    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_hkawauchi/test_wo_pheetrill/labels/" # GroundTruth frame .txt Path
-    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_hkawauchi/test_wo_pheetrill/results/" # Estimate frame .txt Path
-
-    outputpath = labelpath
-
-    files = [f for f in os.listdir(labelpath) if os.path.isfile(os.path.join(labelpath, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
-    results = [f for f in os.listdir(resultpath) if os.path.isfile(os.path.join(resultpath, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
-
+    # train,valid,testおよびvpaに振り分けられた個体名リスト
     trains = ["カルビ","あいぴょん","真央","ブラウニー","花月","黄金","阿伏兎", 
                 "テレスドン","スカイドン","三春","会津","マティアス","エバート","ぶた玉","信成"]
     valids = ["鶴ヶ城","ミコノス","イカ玉"]
     tests = ["あやぴょん","ビスコッテイー","ドラコ","マルチナ","梨花"]
-    lnames = ["Phee","Trill","Twitter","Other Calls"]
     vpas = ["高萩","平磯","阿字ヶ浦","馬堀","三崎","ひばり","つぐみ","日向夏","八朔","桂島","松島"]
 
-    files.sort()
-    results.sort()
-    
-    list_label = [] # (name,date,dic)のtupleを保存するリスト
-    list_results = [] # (name,date,dic)のtupleを保存するリスト
+    # 正解データ，推定データのディレクトリ，結果出力のディレクトリ
+    # filepath = pathlib.Path("/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa/test_wo_pheetrill")
+    # resultpath = pathlib.Path("/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa/test/results")
+    filepath = pathlib.Path("/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_hkawauchi/test_wo_pheetrill/labels")
+    resultpath = pathlib.Path("/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_hkawauchi/test_wo_pheetrill/results")
+    outputpath = filepath
 
+    # 正解データ，推定データのファイル名をリスト化
+    files = [f for f in os.listdir(filepath) if os.path.isfile(os.path.join(filepath, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
+    results = [f for f in os.listdir(resultpath) if os.path.isfile(os.path.join(resultpath, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
+
+    # リストのソート
+    files.sort(key=lambda x:float(re.findall('VOC_.*_.*_(.*)W', x)[0])) # "週"sort by int()
+    files.sort(key=lambda x:re.findall('VOC_.*_(.*)_.*', x)[0]) # "名前"sort
+
+    # 可視化処理
     for i, file in enumerate(files):
 
-        # nparray型のフレームラベル
-        label = np.loadtxt(labelpath + file,dtype=int)
-        results = np.loadtxt(resultpath + file,dtype=int)
+        # nparray型のフレームデータ
+        label = np.loadtxt(filepath / file, dtype=int) # 正解
+        pred = np.loadtxt(resultpath / file, dtype=int) # 推定
 
         # ファイル名から週と名前を抽出
-        date = re.findall('VOC_.*_.*_(.*)W',file) # "週"
-        name = re.findall('VOC_.*_(.*)_.*',file) # "名前"
+        date = re.findall('VOC_.*_.*_(.*)W', file)[0] # "週"
+        name = re.findall('VOC_.*_(.*)_.*', file)[0] # "名前"
 
-        # confusion matrix
-        name = marmo_eng[name[0]]
-        date = date[0]
-        make_confusion_matrix(label, results, [0,1,2,3,4], labelpath, name, date) # 01234567...13, 01234
+        # 混同行列
+        name = marmo_eng[name] # 個体名を英名に
+        make_confusion_matrix(label, pred, 8, outputpath, name, date) # 混同行列作成
         
-        
+        break
