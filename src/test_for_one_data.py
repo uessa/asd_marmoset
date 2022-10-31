@@ -84,7 +84,7 @@ def collate_fn(batch):
     return images, labels
 
 
-def calculate_accuracy(loader, net, num_classes, classes, log):
+def calculate_accuracy(loader, net, num_classes, classes, log, out_dir):
     class_correct = list(0.0 for i in range(num_classes))
     class_total = list(0.0 for i in range(num_classes))
     cm = np.zeros((num_classes, num_classes))
@@ -113,7 +113,7 @@ def calculate_accuracy(loader, net, num_classes, classes, log):
         )
     log("Total accuracy : %2f %%" % (100 * total_accuracy))
 
-    make_confusion_matrix(cm)
+    make_confusion_matrix(cm, out_dir)
     # make_fig(waveforms, predicted, labels)
 
 
@@ -132,7 +132,7 @@ def save_output(loader, out_dir, net, num_classes, classes, log):
             print("save: " + str(fpath))
 
 
-def make_confusion_matrix(cm):
+def make_confusion_matrix(cm, out_dir):
     cm_label = ["No Call", "Phee", "Trill", "Twitter", "Other Calls"]
     # cm_label_estimate = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Tsik', 'Ek', 'Ek-Tsik', 'Cough', 'Cry', 'Chatter', 'Breath', 'Unknown']
     # cm_label = ['No Call', 'Phee', 'Trill', 'Twitter', 'Phee-Trill', 'Trill-Phee', 'Unknown', 'Other Calls']
@@ -160,7 +160,7 @@ def make_confusion_matrix(cm):
     plt.ylabel("Ground Truth Label")
     plt.tight_layout()
     plt.show()
-    fig.savefig("confusion_matrix.pdf")
+    fig.savefig(out_dir / "confusion_matrix.pdf")
 
 
 def make_fig(waveforms, predicted, labels):
@@ -369,10 +369,8 @@ if __name__ == "__main__":
     net.load_state_dict(torch.load(args.model))
     net.eval()
 
-    calculate_accuracy(testloader, net, num_classes, classes, log)
+    calculate_accuracy(testloader, net, num_classes, classes, log, p_model.parent)
 
     out_dir = test_dir / "results"
-    # out_dir = pathlib.Path("/home/kyamaoka/hkawauchi")
     out_dir.mkdir(exist_ok=True)
-
     save_output(testloader, out_dir, net, num_classes, classes, log)
