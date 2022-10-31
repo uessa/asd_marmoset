@@ -158,6 +158,8 @@ def make_confusion_matrix(cm, out_dir):
     plt.ylim(cm.shape[0], 0)
     plt.xlabel("Estimated Label")
     plt.ylabel("Ground Truth Label")
+    plt.yticks(rotation=0,rotation_mode="anchor",ha="right",)
+    plt.xticks(rotation=30,)
     plt.tight_layout()
     plt.show()
     fig.savefig(out_dir / "confusion_matrix.pdf")
