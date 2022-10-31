@@ -153,5 +153,5 @@ if __name__ == "__main__":
     log('-----Training Finished-----')
 
     save_model(net, p)
-    os.system('end_report "ひで(河内)" Training')
+    os.system('end_report "muesaka" Training')
     show_history(train_accuracy, val_accuracy)

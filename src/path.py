@@ -41,4 +41,9 @@ class path:
 
 
 if __name__ == "__main__":
-    p = path("test")
+    p = path("subset_marmoset_23ue")
+
+    p_model = p.model
+    p_model_parent = p_model.parent
+
+    print(p_model_parent)
