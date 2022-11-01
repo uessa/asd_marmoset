@@ -131,8 +131,9 @@ def prop2num(n, proportion):
 
 
 if __name__ == "__main__":
-    # in_dir = "/home/kyamaoka/chainer_template/raw/VAD"
-    # out_dir = "/home/kyamaoka/chainer_template/datasets/VAD_test/raw"
+    # in_dir = "/home/muesaka/projects/hkawauchi/marmoset/raw/marmoset_11vpa_wav"
+    # out_dir = "/home/muesaka/projects/hkawauchi/marmoset/datasets/subset_marmoset_11vpa/raw"
     # proportion = (0.7, 0.1, 0.2)
     # flag_label = 1
+    print("Enable")
     randomize(args.in_dir, args.out_dir, tuple(args.proportion), args.flag_label)
