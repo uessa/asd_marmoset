@@ -94,19 +94,31 @@ if __name__ == "__main__":
                 "テレスドン","スカイドン","三春","会津","マティアス","エバート","ぶた玉","信成"]
     valids = ["鶴ヶ城","ミコノス","イカ玉"]
     tests = ["あやぴょん","ビスコッテイー","ドラコ","マルチナ","梨花"]
+    # tests = ["あやぴょん"]
     vpas = ["高萩","平磯","阿字ヶ浦","馬堀","三崎","ひばり","つぐみ","日向夏","八朔","桂島","松島"]
+    # vpas = ["高萩"]
+    call_init = {'Phee':0, 'Trill':0, 'Twitter':0, 'Ek':0, 'Pr':0, 'Tsik':0, 'Others':0}
 
     path = pathlib.Path("/datanet/users/muesaka/marmoset/Recorder")  # Marmosetの音声ディレクトリ（/あやぴょん, /あさぴょん, ...）
     # files = os.listdir(path) 
     # names = [f for f in files if os.path.isdir(os.path.join(path, f))] # names [あやぴょん, あさぴょん, ...]
 
-    tag = ['     [UE]', '     [VPA]']
-    for j,names in enumerate([trains+valids+tests, vpas]):
-        dict_label = dict() # callの数え上げ用辞書
+    tag = ['UE', 'VPA']
+    data = []
+    index = []
+    for j,names in enumerate([tests+valids+trains, vpas]):
+
+        print(tag[j])
+        # callの数え上げ用辞書
+        dict_label = call_init.copy()
+
         for name in names:
             pattern = str(path) + "/" + name + "/*.TextGrid"
             weeks = glob.glob(pattern)
+            # print(name)
 
+            # callの数え上げ用辞書
+            # dict_label = call_init.copy()
             # 週ごと
             for week in weeks:
                 text = textgrid.TextGrid.fromFile(week) # text = [0:鳴き声, 1:ドア音][interval]
@@ -136,22 +148,45 @@ if __name__ == "__main__":
                           call = "Pr"
 
                     elif (call == "Cry" or
-                          call == "Tsik" or
                           call == "Cough" or
                           call == "Unknown"):
                           call = "Others"
 
                     dict_label[call] = dict_label.get(call, 0) + 1 # {"Phee":0, "Trill":0, ...}
-
-        print(tag[j])
+            # 個体ごとに一度集計
+            # total = sum(dict_label.values())
+            # d={} #空辞書の定義
+            # for n in dict_label:
+            #     if dict_label[n] == 0:
+            #         d[n] = 0
+            #     else:
+            #         d[n] = dict_label[n] / total #割合の計算
+            # # d_ratio = sorted(d.items(), key=lambda x: x[0], reverse=True)
+            # d_ratio = list(d.items())
+            # for m in d_ratio:
+            #     print(m[0].ljust(10), '{}'.format(m[1]))
+            # print("")
+                
         total = sum(dict_label.values())
-        d={}#空辞書の定義
+        d={} #空辞書の定義
         for n in dict_label:
-            d[n] = dict_label[n] / total#割合の計算
+            d[n] = dict_label[n] / total #割合の計算
         d_ratio = sorted(d.items(), key=lambda x: x[1], reverse=True)
+        # d_ratio = list(dict_label.items())
         for m in d_ratio:
-            print(m[0].ljust(10), '{:.3}'.format( round(m[1], 3) ))
-        # d = sorted(dict_label.items(), key=lambda i: i[1], reverse=True)
-        # pprint.pprint(d_ratio)
+            print(m[0].ljust(10), '{}'.format(m[1]))
+            data.append(m[1])
         print("")
-        
+
+    # 積み上げ棒グラフ
+    dataset = pd.DataFrame([data[0:7], data[7:14]], 
+                       index=['UE', 'VPA'], 
+                       columns=["Phee","Twitter","Others","Trill","Ek","Pr","Tsik"])
+    print(dataset)
+    bottom = np.zeros_like(dataset.index)
+    for name in dataset.columns:
+        plt.bar(dataset.index, dataset[name], bottom=bottom, label=name)
+        bottom += dataset[name]
+    
+    plt.legend() 
+    plt.savefig("labelratio.pdf")
