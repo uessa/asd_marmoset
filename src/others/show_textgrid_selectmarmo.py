@@ -1,17 +1,24 @@
-from cProfile import label
+# -*- coding: utf-8 -*-
+
 import os
-import glob
+import re
 import sys
-from tkinter.font import names
-from turtle import color
-import textgrid
+import glob
+import math
 import pprint
+import pathlib
+import textgrid
+import itertools
 import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 import japanize_matplotlib
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+from matplotlib.backends.backend_pdf import PdfPages
 
 if __name__ == "__main__":
-    path = os.path.join("/datanet/users/muesaka/Marmoset/Recorder/")  # Marmosetの音声ディレクトリ（/あやぴょん/, /あさぴょん/, ...）
+    path = os.path.join("/datanet/users/muesaka/Marmoset/Recorder")  # Marmosetの音声ディレクトリ（/あやぴょん/, /あさぴょん/, ...）
     vpa_names = ["三崎","馬掘"]  # ASD個体
     ue_names = ["ぶた玉","イカ玉"]  # 通常個体
     num_week = 13  # 使用する週の合計数

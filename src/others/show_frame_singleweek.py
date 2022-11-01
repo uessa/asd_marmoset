@@ -1,12 +1,23 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import os
-import matplotlib.pyplot as plt
-import pprint
-import japanize_matplotlib
 import re
+import sys
+import glob
+import math
+import pprint
+import pathlib
+import textgrid
+import itertools
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import japanize_matplotlib
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
 from matplotlib.backends.backend_pdf import PdfPages
+
+
 
 if __name__ == "__main__":
 

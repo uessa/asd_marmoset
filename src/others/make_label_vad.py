@@ -67,7 +67,7 @@ def write_label_para(list_data):
 if __name__ == "__main__":
     # path
     path_text = pathlib.Path()
-    path_wav = pathlib.Path('/datanet/users/hkawauchi/vad_marmoset/raw/dataset_ayapyon_wav')
+    path_wav = pathlib.Path('/home/muesaka/projects/marmoset/raw/marmoset_23ue_text')
     (path_text / 'label').mkdir(exist_ok=True)
 
     # Get file list
