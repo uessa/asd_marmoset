@@ -94,16 +94,14 @@ if __name__ == "__main__":
                 "テレスドン","スカイドン","三春","会津","マティアス","エバート","ぶた玉","信成"]
     valids = ["鶴ヶ城","ミコノス","イカ玉"]
     tests = ["あやぴょん","ビスコッテイー","ドラコ","マルチナ","梨花"]
-    # tests = ["あやぴょん"]
     vpas = ["高萩","平磯","阿字ヶ浦","馬堀","三崎","ひばり","つぐみ","日向夏","八朔","桂島","松島"]
-    # vpas = ["高萩"]
     call_init = {'Phee':0, 'Trill':0, 'Twitter':0, 'Ek':0, 'Pr':0, 'Tsik':0, 'Others':0}
 
     path = pathlib.Path("/datanet/users/muesaka/marmoset/Recorder")  # Marmosetの音声ディレクトリ（/あやぴょん, /あさぴょん, ...）
-    # files = os.listdir(path) 
-    # names = [f for f in files if os.path.isdir(os.path.join(path, f))] # names [あやぴょん, あさぴょん, ...]
 
     tag = ['UE', 'VPA']
+    # lab = ["Phee","Twitter","Others","Trill","Ek","Pr","Tsik"]
+    lab = ["Phee","Trill","Twitter","Ek","Pr","Tsik","Others"]
     data = []
     index = []
     for j,names in enumerate([tests+valids+trains, vpas]):
@@ -171,8 +169,8 @@ if __name__ == "__main__":
         d={} #空辞書の定義
         for n in dict_label:
             d[n] = dict_label[n] / total #割合の計算
-        d_ratio = sorted(d.items(), key=lambda x: x[1], reverse=True)
-        # d_ratio = list(dict_label.items())
+        # d_ratio = sorted(d.items(), key=lambda x: x[1], reverse=True)
+        d_ratio = list(d.items())
         for m in d_ratio:
             print(m[0].ljust(10), '{}'.format(m[1]))
             data.append(m[1])
@@ -180,8 +178,8 @@ if __name__ == "__main__":
 
     # 積み上げ棒グラフ
     dataset = pd.DataFrame([data[0:7], data[7:14]], 
-                       index=['UE', 'VPA'], 
-                       columns=["Phee","Twitter","Others","Trill","Ek","Pr","Tsik"])
+                       index=tag, 
+                       columns=lab)
     print(dataset)
     bottom = np.zeros_like(dataset.index)
     for name in dataset.columns:
@@ -189,4 +187,5 @@ if __name__ == "__main__":
         bottom += dataset[name]
     
     plt.legend() 
-    plt.savefig("labelratio.pdf")
+    plt.savefig("./LabelRatio/labelratio.pdf")
+    plt.close()
