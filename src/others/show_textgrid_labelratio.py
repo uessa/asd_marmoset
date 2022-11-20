@@ -96,6 +96,7 @@ if __name__ == "__main__":
     tests = ["あやぴょん","ビスコッテイー","ドラコ","マルチナ","梨花"]
     vpas = ["高萩","平磯","阿字ヶ浦","馬堀","三崎","ひばり","つぐみ","日向夏","八朔","桂島","松島"]
     call_init = {'Phee':0, 'Trill':0, 'Twitter':0, 'Ek':0, 'Pr':0, 'Tsik':0, 'Others':0}
+    temp = ["あいぴょん"]
 
     path = pathlib.Path("/datanet/users/muesaka/marmoset/Recorder")  # Marmosetの音声ディレクトリ（/あやぴょん, /あさぴょん, ...）
 
@@ -105,6 +106,7 @@ if __name__ == "__main__":
     data = []
     index = []
     for j,names in enumerate([tests+valids+trains, vpas]):
+    # for j,names in enumerate([temp]):
 
         print(tag[j])
         # callの数え上げ用辞書
@@ -113,14 +115,36 @@ if __name__ == "__main__":
         for name in names:
             pattern = str(path) + "/" + name + "/*.TextGrid"
             weeks = glob.glob(pattern)
+
+            # パターンマッチング 週抽出と並べ替え
+            # print("name=", name)
+            # print("pre=", len(weeks))
+            for i,week in enumerate(weeks):
+                pattern = 'VOC_[0-9]+[-_][0-9]+_+[^_]*_+([^_]*).*'
+                weeks[i]= [week, re.findall(pattern ,week)[0].replace("W","")]
+
+            weeks = sorted(weeks, key=lambda x: int(x[1]))
+            # pprint.pprint(weeks, width=100)
+            # print("post=", len(weeks))
+
+            week_tmp = []
+            for num in range(len(weeks)):
+                week_tmp.append(weeks[num][0])
+            weeks = week_tmp
+            # pprint.pprint(weeks)
+            
+      
+            
+        
+    
             # print(name)
 
             # callの数え上げ用辞書
             # dict_label = call_init.copy()
             # 週ごと
             for week in weeks:
-                text = textgrid.TextGrid.fromFile(week) # text = [0:鳴き声, 1:ドア音][interval]
-
+                # print(week)
+                text = textgrid.TextGrid.fromFile(week) # text = [0:鳴き声, 1:ドア音][interval]    
                 # TextGridのIntervalごと
                 for k in range(len(text[0])):
                     call = text[0][k].mark # Phee, Trill, ...
@@ -167,13 +191,16 @@ if __name__ == "__main__":
                 
         total = sum(dict_label.values())
         d={} #空辞書の定義
+        count = 0
         for n in dict_label:
             d[n] = dict_label[n] / total #割合の計算
+            count += dict_label[n]
         # d_ratio = sorted(d.items(), key=lambda x: x[1], reverse=True)
         d_ratio = list(d.items())
         for m in d_ratio:
             print(m[0].ljust(10), '{}'.format(m[1]))
             data.append(m[1])
+        print("count=",count)
         print("")
 
     # 積み上げ棒グラフ
@@ -189,3 +216,4 @@ if __name__ == "__main__":
     plt.legend() 
     plt.savefig("./LabelRatio/labelratio.pdf")
     plt.close()
+    
