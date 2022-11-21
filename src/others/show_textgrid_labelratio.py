@@ -90,6 +90,20 @@ correct_label = {'B': 'Breath',
                 'Unknownbreath': 'Unknown'}
 
 if __name__ == "__main__":
+    ue_eng = {"あいぴょん": "aipyon", "あやぴょん": "ayapyon", "あさぴょん": "asapyon", "真央": "mao",
+                 "ブラウニー": "brownie", 
+                 "ビスコッティ": "biscotti",  "ビスコッティー": "biscotti", "ビスコッテイー": "biscotti", "ビスコッテイ": "biscotti",
+                 "花月": "kagetsu", "黄金": "kogane", 
+                 "阿伏兎":"abuto", "スカイドン":"skydon", "ドラコ":"dorako", "テレスドン":"telesdon", 
+                 "三春":"miharu", "会津":"aizu", "鶴ヶ城":"tsurugajo", "マティアス":"matias",
+                 "ミコノス":"mikonos", "エバート":"ebert", "マルチナ":"martina", "ぶた玉":"butatama",
+                 "イカ玉":"ikatama", "梨花":"rika", "信成":"nobunari","カルビ":"kalbi"}
+    sal_eng = {"サブレ": "sable", "スフレ": "souffle",}
+    vpa_eng = {"平磯": "hiraiso", "阿字ヶ浦": "azigaura", "高萩": "takahagi", "三崎": "misaki",
+               "馬堀": "umahori", "八朔": "hassaku", "日向夏": "hyuganatsu", "桂島": "katsurashima",
+               "松島": "matsushima",}
+    vpakids_eng = {"つぐみ": "tsugumi", "ひばり": "hibari",}
+    marmo_eng = {**ue_eng, **sal_eng, **vpa_eng, **vpakids_eng}
     trains = ["カルビ","あいぴょん","真央","ブラウニー","花月","黄金","阿伏兎", 
                 "テレスドン","スカイドン","三春","会津","マティアス","エバート","ぶた玉","信成"]
     valids = ["鶴ヶ城","ミコノス","イカ玉"]
@@ -100,16 +114,17 @@ if __name__ == "__main__":
 
     path = pathlib.Path("/datanet/users/muesaka/marmoset/Recorder")  # Marmosetの音声ディレクトリ（/あやぴょん, /あさぴょん, ...）
 
-    # tag = ['UE', 'VPA']
+    types = ['UE', 'VPA']
     tag = [3,4,5,6,7,8,9,10,11,12,13,14]
     # lab = ["Phee","Twitter","Others","Trill","Ek","Pr","Tsik"]
     lab = ["Phee","Trill","Twitter","Ek","Pr","Tsik","Others"]
+    label_color = {"Phee":"orangered","Trill":"coral","Twitter":"darksalmon","Ek":"deepskyblue","Tsik":"blue","Pr":"dodgerblue","Others":"darkgrey"}
 
     # UE，VPAのタグそれぞれで処理
-    # for j,names in enumerate([tests+valids+trains, vpas]):
-    for j,names in enumerate([temp]):
+    for types_index,names in enumerate([tests+valids+trains, vpas]):
+    # for types_index,names in enumerate([temp]):
 
-        print(tag[j])
+        print(types[types_index])
 
         # 個体名でforループ
         for name in names:
@@ -196,21 +211,6 @@ if __name__ == "__main__":
                 print("")
                 print(len(data_split))
                 data.append(data_split)
-        
-        # 集計
-        # total = sum(dict_label.values())
-        # d={} #空辞書の定義
-        # count = 0
-        # for n in dict_label:
-        #     d[n] = dict_label[n] / total #割合の計算
-        #     count += dict_label[n]
-        # # d_ratio = sorted(d.items(), key=lambda x: x[1], reverse=True)
-        # d_ratio = list(d.items())
-        # for m in d_ratio:
-        #     print(m[0].ljust(10), '{}'.format(m[1]))
-        #     data.append(m[1])
-        # print("count=",count)
-        # print("")
 
 
             # 積み上げ棒グラフ
@@ -219,8 +219,13 @@ if __name__ == "__main__":
                             columns=lab)
             print(dataset)
             print("")
-            dataset.plot.bar(stacked=True)
-            plt.legend() 
-            plt.savefig("./LabelRatio/LabelRatioWeeks_{}.pdf".format(name))
+            dataset.plot.bar(stacked=True, color=label_color)
+            # plt.legend() 
+            plt.legend(fontsize=8, bbox_to_anchor=(0, 1), loc='lower left', ncol=7, )
+            plt.ylabel("Call Ratio (%) ")
+            plt.xlabel("Week")
+            plt.title("{}_{}".format(types[types_index], marmo_eng[name]), y=1.08)
+            plt.tight_layout()
+            plt.savefig("./LabelRatio/LabelRatioWeeks_{}_{}.pdf".format(types[types_index], name))
             plt.close()
-    
+
