@@ -125,51 +125,42 @@ if __name__ == "__main__":
     # for types_index,names in enumerate([temp]):
 
         print(types[types_index])
-        print("")
 
         # 個体名でforループ
-        # for name in names:
-        #     data = []
-        #     pattern = str(path) + "/" + name + "/*.TextGrid"
-        #     weeks = glob.glob(pattern)
+        for name in names:
 
-        data = []
-        # 週ごとにforループ
-        lenweek = tag
-        for i in lenweek:
-            data_split = []
-            dict_label = call_init.copy()
-            print(data_split)
-            print(dict_label)
+            data = []
+            
+            pattern = str(path) + "/" + name + "/*.TextGrid"
+            weeks = glob.glob(pattern)
 
-            # 個体名でforループ
-            for name in names:
-                # data = []
-                pattern = str(path) + "/" + name + "/*.TextGrid"
-                weeks = glob.glob(pattern)
+            # パターンマッチング 週抽出と並べ替え
+            for i,week in enumerate(weeks):
+                pattern = 'VOC_[0-9]+[-_][0-9]+_+[^_]*_+([^_]*).*'
+                weeks[i]= [week, re.findall(pattern ,week)[0].replace("W","")]
+            weeks = sorted(weeks, key=lambda x: int(x[1]))
+            week_tmp = []
+            for num in range(len(weeks)):
+                week_tmp.append(weeks[num][0])
+            weeks = week_tmp
+            
 
-                # パターンマッチング 週抽出と並べ替え
-                # for i,week in enumerate(weeks):
-                #     pattern = 'VOC_[0-9]+[-_][0-9]+_+[^_]*_+([^_]*).*'
-                #     weeks[i]= [week, re.findall(pattern ,week)[0].replace("W","")]
-                # weeks = sorted(weeks, key=lambda x: int(x[1]))
-                # week_tmp = []
-                # for num in range(len(weeks)):
-                #     week_tmp.append(weeks[num][0])
-                # weeks = week_tmp
-
+            # 週ごとにforループ
+            lenweek = tag
+            for i in lenweek:
 
                 # callの数え上げ用辞書
-                # dict_label = call_init.copy()
+                dict_label = call_init.copy()
+
                 for week in weeks:
                     pattern = 'VOC_[0-9]+[-_][0-9]+_+[^_]*_+([^_]*).*'
                     j = re.findall(pattern ,week)[0].replace("W","")
+
                     if str(i) != j:
                         continue
-                    # print(i,j)
+                    print(i,j)
                     print(week)
                     text = textgrid.TextGrid.fromFile(week) # text = [0:鳴き声, 1:ドア音][interval]    
-
                     # TextGridのIntervalごと
                     for k in range(len(text[0])):
                         call = text[0][k].mark # Phee, Trill, ...
@@ -189,48 +180,53 @@ if __name__ == "__main__":
                             call == "Chirp" or
                             call == "Chatter"):
                             continue
+
                         elif (call == "Phee-Trill" or
                             call == "Trill-Phee"):
                             call = "Pr"
+
                         elif (call == "Cry" or
                             call == "Cough" or
                             call == "Unknown"):
                             call = "Others"
+
                         dict_label[call] = dict_label.get(call, 0) + 1 # {"Phee":0, "Trill":0, ...}
-
-            # 個体ごとに一度集計
-            # data_split = []
-            total = sum(dict_label.values())
-            d={} #空辞書の定義
-            count = 0
-            for n in dict_label:
-                if dict_label[n] == 0:
-                    d[n] = 0
-                else:
-                    d[n] = dict_label[n] / total #割合の計算
-                    count += dict_label[n]
-            # d_ratio = sorted(d.items(), key=lambda x: x[0], reverse=True)
-            d_ratio = list(d.items())
-            # d_ratio = list(dict_label.items())
-            for m in d_ratio:
-                print(m[0].ljust(10), '{}'.format(m[1]))
-                data_split.append(m[1])
-            # print("count=",count)
-            # print("")
-            print(len(data_split))
-            data.append(data_split)
+                # 個体ごとに一度集計
+                data_split = []
+                total = sum(dict_label.values())
+                d={} #空辞書の定義
+                count = 0
+                for n in dict_label:
+                    if dict_label[n] == 0:
+                        d[n] = 0
+                    else:
+                        d[n] = dict_label[n] / total #割合の計算
+                        count += dict_label[n]
+                d_ratio = list(d.items())
+                # d_ratio = list(dict_label.items())
+                for m in d_ratio:
+                    print(m[0].ljust(10), '{}'.format(m[1]))
+                    data_split.append(m[1])
+                print("count=",count)
+                print("")
+                # print(len(data_split))
+                data.append(data_split)
 
 
-        # 積み上げ棒グラフ
-        dataset = pd.DataFrame(data, index=tag, columns=lab)
-        print(dataset)
-        print("")
-        dataset.plot.bar(stacked=True, color=label_color)
-        plt.legend(fontsize=8, bbox_to_anchor=(0, 1), loc='lower left', ncol=7, )
-        plt.ylabel("Call Ratio (%) ")
-        plt.xlabel("Week")
-        plt.title("{}".format(types[types_index]), y=1.08)
-        plt.tight_layout()
-        plt.savefig("./LabelRatio/LabelRatioWeeks_{}_ratio.pdf".format(types[types_index]))
-        plt.close()
-
+            # 積み上げ棒グラフ
+            dataset = pd.DataFrame(data, 
+                            index=tag, 
+                            columns=lab)
+            print(dataset)
+            print("")
+            dataset.plot.bar(stacked=True, color=label_color)
+            # plt.legend() 
+            plt.legend(fontsize=8, bbox_to_anchor=(0, 1), loc='lower left', ncol=7, )
+            plt.ylabel("Call Ratio (%) ")
+            # plt.ylabel("Call Count ")
+            plt.xlabel("Week")
+            plt.title("{}_{}".format(types[types_index], marmo_eng[name]), y=1.08)
+            plt.tight_layout()
+            plt.savefig("./LabelRatio/LabelRatioWeeks_{}_{}_ratio.pdf".format(types[types_index], name))
+            # plt.savefig("./LabelRatio/LabelRatioWeeks_{}_{}_count.pdf".format(types[types_index], name))
+            plt.close()
