@@ -17,6 +17,9 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from sklearn.metrics import confusion_matrix
 from matplotlib.backends.backend_pdf import PdfPages
+# from sklearn.model_selection import train_test_split
+from sklearn.linear_model import PoissonRegressor
+# from sklearn.linear_model import TweedieRegressor
 
 # 混合行列作成
 
@@ -40,10 +43,10 @@ if __name__ == "__main__":
     call_label = {0: "No Call", 1: "Phee", 2: "Trill", 3: "Twitter", 4: "Other Calls"} # ラベル番号の辞書
     call_init = {v: 0 for k,v in call_label.items()} # カウント用辞書
 
-    labelpath1 = "/home/muesaka/projects/marmoset/raw/marmoset_23ue_text/label/" # GroundTruth frame .txt Path
-    resultpath1 = "/home/muesaka/projects/marmoset/raw/marmoset_23ue_text/label/" # Estimate frame .txt Path
-    labelpath2 = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa/test_wo_pheetrill/" # GroundTruth frame .txt Path
-    resultpath2 = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa/test/results/" # Estimate frame .txt Path
+    labelpath1 = "/home/muesaka/projects/marmoset/raw/marmoset_23ue_text/5class_label/" # GroundTruth frame .txt Path
+    resultpath1 = "/home/muesaka/projects/marmoset/raw/marmoset_23ue_text/5class_label/" # Estimate frame .txt Path
+    labelpath2 = "/home/muesaka/projects/marmoset/raw/marmoset_11vpa_text/label_5class/" # GroundTruth frame .txt Path
+    resultpath2 = "/home/muesaka/projects/marmoset/raw/marmoset_11vpa_text/label_5class/" # Estimate frame .txt Path
     outputpath = labelpath1
 
     files1 = [f for f in os.listdir(labelpath1) if os.path.isfile(os.path.join(labelpath1, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
@@ -118,7 +121,9 @@ if __name__ == "__main__":
         list_label1.append((name[0], math.floor(float(date[0])), num_label, "UE")) # tupleとして追加していく
         list_results1.append((name[0], math.floor(float(date[0])), num_results, "UE")) # tupleとして追加していく
 
-        # break
+        # if i == 10:
+
+        #     break 
 
     # vpa
     for i, file in enumerate(files2):
@@ -164,7 +169,9 @@ if __name__ == "__main__":
         list_label2.append((name[0], math.floor(float(date[0])), num_label, "VPA")) # tupleとして追加していく
         list_results2.append((name[0], math.floor(float(date[0])), num_results, "VPA")) # tupleとして追加していく
 
-        # break
+        # if i == 10:
+
+        #     break   
         
                 
 
@@ -175,13 +182,14 @@ if __name__ == "__main__":
         fig = plt.figure(figsize=(15,5))
         ax1 = plt.subplot(1,2,1)
         ax2 = plt.subplot(1,2,2)
-        label_name = "Twitter"
+        label_name = "Phee"
 
         # データ列作成
         # UE's label and result
         week = np.empty(0,dtype=int)
         count_label = []
         count_results = []
+
         for i in range(len(list_label1)):
             week = np.append(week, list_label1[i][1])
             count_label.append(list_label1[i][2][label_name])
@@ -196,6 +204,47 @@ if __name__ == "__main__":
         # ax1.plot(week, np.poly1d(np.polyfit(week, count_results, 2))(week))
 
 
+        # glm = PoissonRegressor()  # デフォルト
+        glm = PoissonRegressor(
+                                alpha=0,  # ペナルティ項
+                                fit_intercept=True,  # 切片
+                                max_iter=300,  # ソルバーの試行回数
+                            )
+        X = week
+        X = X.reshape(len(X), 1)
+        pprint.pprint(X.shape)
+        y = np.array(count_label)
+        # y = y.reshape(len(y), 1)
+        pprint.pprint(y.shape)
+        glm.fit(X, y)
+        # print("score:", glm.score(X_test, y_test))
+
+        y_hat = glm.predict(np.arange(np.max(X)).reshape(np.max(X), 1) + 1 )
+        ax1.plot(np.arange(np.max(X)) + 1, y_hat)
+
+        # print(y_hat)
+
+        # 可視化
+        # fig = plt.figure(figsize=(6.0, 6.0))
+        # plt.plot(X, y, "o")
+        # plt.plot(X, y_hat, "*", color="r")
+        # plt.xlabel('x (total_bill)'), plt.ylabel('y (tips)')
+        # plt.xlim(0, 60), plt.ylim(0, 12)
+        # plt.show()
+
+
+        # df = pd.DataFrame([week, count_label], index=["week", "count"]).T
+        # sns.lineplot(x="week", y="count", data=df, ax=ax1)
+
+        # df = pd.DataFrame([week, count_results], index=["week", "count"]).T
+        # sns.lineplot(x="week", y="count", data=df, ax=ax2)
+
+
+
+
+
+
+
         # VPA's label and results
         week = np.empty(0,dtype=int)
         count_label = []
@@ -208,7 +257,9 @@ if __name__ == "__main__":
         # プロット
         # plt.subplot(1, 2, 1)
         ax1.scatter(week, count_label, label="VPA", marker="x") # vpa gt
-        # ax1.plot(week, np.poly1d(np.polyfit(week, count_label, 2))(week))
+
+        # ax1.plot(week, np.poly1d(np.polyfit(week, np.array(count_label), 2))(week))
+
         ax1.set_ylabel("Counts (call)")
         ax1.set_xlabel("Weeks")
         ax1.set_title("Ground Truth")
@@ -221,6 +272,24 @@ if __name__ == "__main__":
         ax2.set_xlabel("Weeks")
         ax2.set_title("Estimation")
         ax2.legend(loc="upper right")
+
+        # df = pd.DataFrame([week, count_label], index=["week", "count"]).T
+        # sns.lineplot(x="week", y="count", data=df, ax=ax1)
+
+        # df = pd.DataFrame([week, count_results], index=["week", "count"]).T
+        # sns.lineplot(x="week", y="count", data=df, ax=ax2)
+
+        X = week
+        X = X.reshape(len(X), 1)
+        pprint.pprint(X.shape)
+        y = np.array(count_label)
+        # y = y.reshape(len(y), 1)
+        pprint.pprint(y.shape)
+        glm.fit(X, y)
+        # print("score:", glm.score(X_test, y_test))
+
+        y_hat = glm.predict(np.arange(np.max(X)).reshape(np.max(X), 1) + 1 )
+        ax1.plot(np.arange(np.max(X)) + 1, y_hat)
         
         # 保存
         fig.suptitle(label_name)
