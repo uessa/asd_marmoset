@@ -80,9 +80,20 @@ class CNNTrainer(ClassifierTrainer):
                 labels = labels.to(self.device)
 
                 outputs = self.net(inputs)
+                # ###
+                # print("outputs.data: {}".format(outputs.data))
+                # print("inputs: {}".format(inputs))
+                # # ###
                 _, predicted = torch.max(outputs.data, 1)
+                # # ###
+                # print("predicted: {}".format(predicted))
+                # ###
                 total += labels.size(0) * labels.size(-1)
                 correct += (predicted == labels).sum().item()
+                # ###
+                # print("total: {}".format(total))
+                # print("correct: {}".format(correct))
+                # ###
         return correct / total
 
 

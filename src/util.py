@@ -98,7 +98,25 @@ def masked_cross_entropy(outputs, labels):
     f3 = labels == 7
     flag = f1 | f2 | f3
     labels[flag] = -1
-            
-    criterion = nn.CrossEntropyLoss(ignore_index=-1)
+    
+    # 重み追加
+    # nocall = 1.0/3435921.0
+    # phee = 1.0/934883.0
+    # trill = 1.0/79324.0
+    # twitter = 1.0/458947.0
+    # other = 1.0/65162
+
+    nocall = 1.0
+    phee = 1.0
+    trill = 1.0
+    twitter = 1.0
+    other = 1.0
+
+
+    device = torch.device("cuda:0")
+    weights = torch.tensor([nocall, phee, trill, twitter, other]).to(device)
+    criterion = nn.CrossEntropyLoss(weight=weights, ignore_index=-1)
+
+    # criterion = nn.CrossEntropyLoss(ignore_index=-1)
     loss = criterion(outputs, labels)
     return loss

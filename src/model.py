@@ -78,7 +78,9 @@ class NetworkCNN(nn.Module):
             nn.Conv2d(
                 ch_4, ch_out, kernel_size=3, stride=1, padding=1, dilation=1
             ),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(3, 1), padding=(0, 1), ceil_mode=True),
+            nn.AvgPool2d(
+                kernel_size=(3, 3), stride=(3, 1), padding=(0, 1), ceil_mode=True
+            ),
             nn.ReLU(),
             nn.BatchNorm2d(ch_out),
         )

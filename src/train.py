@@ -19,6 +19,7 @@ import dataset
 from focalloss import *
 from functions import chk
 from util import masked_cross_entropy
+torch.backends.cudnn.enabled = False
 plt.switch_backend("agg")
 
 def parse_cmd_line_arguments():
@@ -109,7 +110,8 @@ if __name__ == "__main__":
     if args.seed is not None:
         set_random_seed(args.seed)
 
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0")
     trainloader, valloader, num_classes = get_data_loaders(p, args.batch_size, arch)
     # net = model.ResNet('ResNet18', num_classes=num_classes)
     net = model.NetworkCNN()
@@ -121,6 +123,7 @@ if __name__ == "__main__":
 
     # criterion = nn.CrossEntropyLoss()
     criterion = masked_cross_entropy
+    # criterion = criterion.to(device)
     optimizer = optim.SGD(net.parameters(), lr=args.lr,
                               momentum=0.9, dampening=0,
                               weight_decay=0.0001, nesterov=False)
@@ -153,5 +156,6 @@ if __name__ == "__main__":
     log('-----Training Finished-----')
 
     save_model(net, p)
-    os.system('end_report "muesaka" Training')
+    subset_name = "marmoset"
+    os.system("end_report 上坂奏人 train: {}".format(subset_name))
     show_history(train_accuracy, val_accuracy)

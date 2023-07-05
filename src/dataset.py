@@ -29,8 +29,14 @@ class Mydatasets(torch.utils.data.Dataset):
     def getonesample(self, idx):
         path_spec = self.list_spec[idx]
         path_label = self.list_label[idx]
+        
+        # if スペクトログラムのnpyがモノラルであったら then
         outdata_spec = np.load(path_spec)
-        outdata_spec = outdata_spec[:, :, 0]
+        if len(outdata_spec.shape) == 2:
+            outdata_spec = outdata_spec
+        else:
+            outdata_spec = outdata_spec[:, :, 0]
+
         outdata_label = np.loadtxt(path_label)
 
         if self.transform:
@@ -40,12 +46,14 @@ class Mydatasets(torch.utils.data.Dataset):
 
 
 if __name__ == "__main__":
-    p = path.path("subset_marmoset_23ue")
-    train = p.train
-    mydataset = Mydatasets(train, "cnn")
-    trainloader = torch.utils.data.DataLoader(
+    p = path.path("subset_marmoset_new_vpa")
+    test = p.test
+    mydataset = Mydatasets(test, "cnn")
+    testloader = torch.utils.data.DataLoader(
         mydataset, batch_size=2, shuffle=False, num_workers=1
     )
+    print(mydataset.__getitem__(1)[0].shape) # スペクトログラム（.npy）のshape
     print(mydataset.__getitem__(0)[0].shape) # スペクトログラム（.npy）のshape
-    print(mydataset.__getitem__(0)[1].shape) # 正解ラベル（.txt）のshape
-    print(mydataset.__getitem__(0)[1]) # 正解ラベル表示
+
+    # print(mydataset.__getitem__(0)[1].shape) # 正解ラベル（.txt）のshape
+    # print(mydataset.__getitem__(0)[1]) # 正解ラベル表示

@@ -1,3 +1,7 @@
+#-------------------------------------#
+# 
+#
+#-------------------------------------#
 import argparse
 import os
 import pathlib
@@ -98,9 +102,16 @@ def calculate_accuracy(loader, net, num_classes, classes, log, out_dir):
             # c = (predicted == labels).squeeze()
             c = predicted == labels
             for n in range(len(labels)):
+
+                print("label:",labels[n][0])
+                print("predict:",predicted[n][0])
+                print("list_num_classes:", [i for i in range(num_classes)])
+                print("")
+
                 cm += confusion_matrix(
-                    labels[n][0], predicted[n][0], [i for i in range(num_classes)]
+                    labels[n][0], predicted[n][0], labels=[i for i in range(num_classes)]
                 )
+            # break
 
     accuracy = np.diag(cm) / np.sum(cm, axis=1)
     total_accuracy = np.sum(np.diag(cm)) / np.sum(cm)
@@ -113,8 +124,8 @@ def calculate_accuracy(loader, net, num_classes, classes, log, out_dir):
         )
     log("Total accuracy : %2f %%" % (100 * total_accuracy))
 
-    make_confusion_matrix(cm, out_dir)
-    # make_fig(waveforms, predicted, labels)
+    # make_confusion_matrix(cm, out_dir)
+    make_fig(waveforms, predicted, labels, out_dir)
 
 
 def save_output(loader, out_dir, net, num_classes, classes, log):
@@ -142,22 +153,23 @@ def make_confusion_matrix(cm, out_dir):
     # cm = cm.T
     # cm_prob = cm_prob[:, :5]
     # cm_prob = cm_prob.T
-
-    fig = plt.figure(figsize=(10, 10))
+    
+    fig = plt.figure(figsize=(8, 4))
     # 2クラス分類：font=25,annot_kws35, 12クラス分類：font=15,annot_kws10, 5クラス分類：font=15,annot_kws20, cbar=False
     plt.rcParams["font.size"] = 15
     sns.heatmap(
         cm_prob,
         annot=cm,
-        cmap="GnBu",
+        # cmap="GnBu",
+        cmap="Greys",
         xticklabels=cm_label,
         yticklabels=cm_label,
         fmt=".10g",
-        square=True,
+        cbar_kws=dict(ticks=[0.2, 0.4, 0.6, 0.8, 1.0])
     )
     plt.ylim(cm.shape[0], 0)
     plt.xlabel("Estimated Label")
-    plt.ylabel("Ground Truth Label")
+    plt.ylabel("Target Label")
     plt.yticks(rotation=0,rotation_mode="anchor",ha="right",)
     plt.xticks(rotation=30,)
     plt.tight_layout()
@@ -165,7 +177,8 @@ def make_confusion_matrix(cm, out_dir):
     fig.savefig(out_dir / "confusion_matrix.pdf")
 
 
-def make_fig(waveforms, predicted, labels):
+
+def make_fig(waveforms, predicted, labels, out_dir):
     # Spectrogram_GroundTruthLabel_EstimateLabel
     predicted = np.squeeze(predicted)
     labels = np.squeeze(labels)
@@ -174,12 +187,14 @@ def make_fig(waveforms, predicted, labels):
     end_time = stop * 1024 / 96000
     time = np.linspace(0, end_time, stop)
 
+    plt.rcParams["font.family"] = "Times New Roman" # フォントファミリー
+
     # スペクトログラム
     ref = np.median(np.abs(waveforms))
     powspec = librosa.amplitude_to_db(np.abs(waveforms), ref=ref)
     powspec = np.squeeze(powspec)
     fig, ax = plt.subplots(
-        3, 1, figsize=(10, 10), gridspec_kw={"height_ratios": [3, 2, 2]}
+        3, 1, figsize=(40, 10), gridspec_kw={"height_ratios": [3, 2, 2]}, dpi=512
     )
     ax[0].set_title("Spectrogram", fontsize=24)
     librosa.display.specshow(
@@ -193,18 +208,30 @@ def make_fig(waveforms, predicted, labels):
         norm=Normalize(vmin=-10, vmax=2),
         ax=ax[0],
     )
-    ax[0].set_xlim(200, 250)
+    
+    LEN = [200, 220]
+    # LEN = [197.2, 206.8]
+    # LEN = [200, 202]
+
+    ax[0].set_xlim(LEN)
+    # ax[0].set_xticks([198,200,202,204,206])
+    ax[0].xaxis.set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x))))
     # ax[0].set_xticks([200, 210, 220, 230, 240, 250], [200, 210, 220, 230, 240, 250])
-    ax[0].set_xticklabels([200, "", 210, "", 220, "", 230, "", 240, "", 250])
+    # ax[0].set_xticklabels([200, "", 210, "", 220, "", 230, "", 240, "", 250])
+    # ax[0].set_xticklabels([115, "", 120, "", 125])
     ax[0].set_yticklabels([0, 20, 40])
+    # ax[0].set_yticklabels([0, 10, 20])
     ax[0].set_ylabel("Frequency [kHz]", fontsize=24)
     ax[0].tick_params(labelsize=22)
     # plt.colorbar(format="%+2.0fdB")
 
     # 正解ラベル
-    ax[1].set_title("Ground Truth Label", fontsize=24)
+    ax[1].set_title("Annotated Label", fontsize=24)
     color_label = {0: "black", 1: "crimson", 2: "darkgreen", 3: "mediumblue", 4: "gold"}
     call_label = {0: "No Call", 1: "Phee", 2: "Trill", 3: "Twitter", 4: "Other Calls"}
+    # line_label = {0: "dashdot", 1: "dashed", 2: "dashed", 3: "dotted", 4: "solid"}
+    line_label = {0: "solid", 1: "dashed", 2: "dashdot", 3: "dotted", 4: "solid"}
+
     for i in range(max(labels)):
         first_plot = True
         labels_convert = labels == (i + 1)
@@ -219,8 +246,8 @@ def make_fig(waveforms, predicted, labels):
                     ax[1].plot(
                         time[start_call:end_call],
                         labels_convert[start_call:end_call],
-                        linestyle="solid",
-                        linewidth=0.8,
+                        linestyle=line_label[i + 1],
+                        linewidth=1.5,
                         color=color_label[i + 1],
                         label=call_label[i + 1],
                     )
@@ -229,8 +256,8 @@ def make_fig(waveforms, predicted, labels):
                     ax[1].plot(
                         time[start_call:end_call],
                         labels_convert[start_call:end_call],
-                        linestyle="solid",
-                        linewidth=0.8,
+                        linestyle=line_label[i + 1],
+                        linewidth=1.5,
                         color=color_label[i + 1],
                     )
             else:
@@ -250,8 +277,8 @@ def make_fig(waveforms, predicted, labels):
                 ax[1].plot(
                     time[start_no_call:end_no_call],
                     labels[start_no_call:end_no_call],
-                    linestyle="solid",
-                    linewidth=0.8,
+                    linestyle=line_label[0],
+                    linewidth=1.5,
                     color=color_label[0],
                     label=call_label[0],
                 )
@@ -260,8 +287,8 @@ def make_fig(waveforms, predicted, labels):
                 ax[1].plot(
                     time[start_no_call:end_no_call],
                     labels[start_no_call:end_no_call],
-                    linestyle="solid",
-                    linewidth=0.8,
+                    linestyle=line_label[0],
+                    linewidth=1.5,
                     color=color_label[0],
                 )
         else:
@@ -270,11 +297,11 @@ def make_fig(waveforms, predicted, labels):
                 break
     # plt.plot(time, labels/4)
     # plt.plot(time, predicted*0.8, linewidth=1)
-    ax[1].set_xlim(200, 250)
+    ax[1].set_xlim(LEN)
     # plt.yticks([0, 0.25, 0.5, 0.75, 1.0], ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls'])
-    # ax[1].set_yticks([0, 1.0], ['No Call', 'Call'])
-    ax[1].set_yticklabels(["No Call", "", "Call"])
-    ax[1].legend(loc="upper right", fontsize="18")
+    ax[1].set_yticks([0.0, 1.0])
+    ax[1].set_yticklabels(["No Call", "Call"])
+    # ax[1].legend(loc="center right", fontsize="18")
     ax[1].tick_params(labelsize=22)
 
     # 推定ラベル
@@ -293,8 +320,8 @@ def make_fig(waveforms, predicted, labels):
                     ax[2].plot(
                         time[start_call:end_call],
                         predicted_convert[start_call:end_call],
-                        linestyle="solid",
-                        linewidth=0.8,
+                        linestyle=line_label[i + 1],
+                        linewidth=1.5,
                         color=color_label[i + 1],
                         label=call_label[i + 1],
                     )
@@ -303,8 +330,8 @@ def make_fig(waveforms, predicted, labels):
                     ax[2].plot(
                         time[start_call:end_call],
                         predicted_convert[start_call:end_call],
-                        linestyle="solid",
-                        linewidth=0.8,
+                        linestyle=line_label[i + 1],
+                        linewidth=1.5,
                         color=color_label[i + 1],
                     )
             else:
@@ -324,8 +351,8 @@ def make_fig(waveforms, predicted, labels):
                 ax[2].plot(
                     time[start_no_call:end_no_call],
                     predicted[start_no_call:end_no_call],
-                    linestyle="solid",
-                    linewidth=0.8,
+                    linestyle=line_label[0],
+                    linewidth=1.5,
                     color=color_label[0],
                     label=call_label[0],
                 )
@@ -334,8 +361,8 @@ def make_fig(waveforms, predicted, labels):
                 ax[2].plot(
                     time[start_no_call:end_no_call],
                     predicted[start_no_call:end_no_call],
-                    linestyle="solid",
-                    linewidth=0.8,
+                    linestyle=line_label[0],
+                    linewidth=1.5,
                     color=color_label[0],
                 )
         else:
@@ -343,15 +370,15 @@ def make_fig(waveforms, predicted, labels):
             if k >= len(labels):
                 break
     # plt.plot(time, predicted/4)
-    ax[2].set_xlim(200, 250)
+    ax[2].set_xlim(LEN)
     # plt.yticks([0, 0.25, 0.5, 0.75, 1.0], ['No Call', 'Phee', 'Trill', 'Twitter', 'Other Calls'])
-    # ax[2].set_yticks([0, 1.0], ['No Call', 'Call'])
-    ax[2].set_yticklabels(["No Call", "", "Call"])
-    ax[2].legend(loc="upper right", fontsize="18")
+    ax[2].set_yticks([0.0, 1.0])
+    ax[2].set_yticklabels(["No Call", "Call"])
+    ax[2].legend(loc="upper center", bbox_to_anchor=(0.5, -0.1), fontsize="25", ncol=4)
     ax[2].set_xlabel("Time [s]", fontsize=24)
     ax[2].tick_params(labelsize=22)
     plt.tight_layout()
-    plt.savefig("spec_labels.pdf")
+    plt.savefig(out_dir / "spec_labels.pdf")
     plt.show()
 
 
@@ -375,4 +402,7 @@ if __name__ == "__main__":
 
     out_dir = test_dir / "results"
     out_dir.mkdir(exist_ok=True)
-    save_output(testloader, out_dir, net, num_classes, classes, log)
+    # os.system('end_report "上坂奏人" test=')
+    subset_name = "marmoset"
+    os.system("end_report 上坂奏人 test={}".format(subset_name))
+    # save_output(testloader, out_dir, net, num_classes, classes, log)
