@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-
+#-------------------------------------#
+# 
+#
+#-------------------------------------#
 import os
 import re
 import sys
@@ -46,8 +49,8 @@ if __name__ == "__main__":
 
     is_plot = 1 # plot on/off
 
-    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa/test_wo_pheetrill/" # GroundTruth frame .txt Path
-    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa/test/results/" # Estimate frame .txt Path
+    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka/test/" # GroundTruth frame .txt Path
+    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka/test/results_5class_before/" # Estimate frame .txt Path
     # labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_hkawauchi/test_wo_pheetrill/labels/" # GroundTruth frame .txt Path
     # resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_hkawauchi/test_wo_pheetrill/results/" # Estimate frame .txt Path
 
@@ -111,7 +114,7 @@ if __name__ == "__main__":
             plt.plot(results_sec, results == 1, "b",label="1:"+call_label[1], lw=lw) # Phee
             plt.plot(results_sec, results == 2, "g",label="2:"+call_label[2], lw=lw) # Trill
             plt.plot(results_sec, results == 3, "r",label="3:"+call_label[3], lw=lw) # Twitter
-            # plt.plot(results_sec, results == 4, "c",label="4:"+call_label[4], lw=lw) # Other Calls
+            plt.plot(results_sec, results == 4, "c",label="4:"+call_label[4], lw=lw) # Other Calls
             plt.xlim([x_min,x_max])
             plt.yticks([0,1],["NoCall","Call"])
             plt.ylabel("Est.")

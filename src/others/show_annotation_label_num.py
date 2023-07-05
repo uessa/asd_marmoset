@@ -112,107 +112,120 @@ if __name__ == "__main__":
     valids = ["鶴ヶ城","ミコノス","イカ玉"]
     tests = ["あやぴょん","ビスコッテイー","ドラコ","マルチナ","梨花"]
     vpas = ["高萩","平磯","阿字ヶ浦","馬堀","三崎","ひばり","つぐみ","日向夏","八朔","桂島","松島"]
-    call_init = {'Phee':0, 'Trill':0, 'Twitter':0, 'Others':0}
-    temp = ["あいぴょん"]
-
-    path = pathlib.Path("/datanet/users/muesaka/marmoset/Recorder")  # Marmosetの音声ディレクトリ（/あやぴょん, /あさぴょん, ...）
+    call_label = { 0: "No Call",     1: "Phee",       2: "Trill",     3: "Twitter", 
+                   4: "Tsik",        5: "Ek",         6: "Ek-Tsik",   7: "Cough",
+                   8: "Cry",         9: "Chatter",   10: "Breath",   11: "Unknown",
+                  12: "Phee-Trill", 13: "Trill-Phee"}
+    call_init_tmp = {v: k for k, v in call_label.items()}
+    call_init = {k: 0 for k in call_init_tmp.keys()}
 
     types = ['UE', 'VPA']
     tag = [3,4,5,6,7,8,9,10,11,12,13,14]
-    lab = ["Phee","Trill","Twitter","Others"]
-    label_color = {"Phee":"red","Trill":"blue","Twitter":"green","Others":"black"}
+    # lab = ["Phee","Twitter","Others","Trill","Ek","Pr","Tsik"]
+    lab = ["No Call",       "Phee",     "Trill",    "Twitter",
+           "Tsik",          "Ek",       "Ek-Tsik",  "Cough",
+           "Cry",           "Chatter",  "Breath",   "Unknown",
+           "Phee-Trill",    "Trill-Phee"]
+    label_color = {"Phee":"white","Trill":"lightgray","Twitter":"grey","Other Calls":"black"}
 
-    # UE，VPAのタグそれぞれで処理
-    for types_index,names in enumerate([tests, vpas]):
-    # for types_index,names in enumerate([temp]):
+    # labelとresultを照応し，片方をプロットする．
+    # 照応することで，wolabelの部分のothercallsを飛ばすことができる
+    # 現状は簡単化のためにフレームでやる
 
-        print(types[types_index])
+    # ファイルリストの作成
+    labelpath = pathlib.Path("/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka/train")
+    # resultpath = pathlib.Path("/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka/test/results_5class_before")
+    resultpath = labelpath
+    labellist = list(labelpath.glob("*.txt"))
+    resultlist = list(resultpath.glob("*.txt"))
+    labellist = sorted(labellist)
+    resultlist = sorted(resultlist)
+
+    # 週でforループ
+    label_data = []
+    result_data =  []
+    for i in tag:
+        print("---week: {}----------------------------------------".format(i))
         print("")
 
-        data = []
-        # 週ごとにforループ
-        lenweek = tag
-        for i in lenweek:
-            data_split = []
-            dict_label = call_init.copy()
-            print(data_split)
-            print(dict_label)
+        # カウント辞書初期化
+        dict_label = call_init.copy()
+        dict_result = call_init.copy()
+        
+        # 週iごとの処理：1処理1ファイル
+        weeks = []
+        for j in range(len(labellist)):
 
-            # 個体名でforループ
-            for name in names:
-                # data = []
-                pattern = str(path) + "/" + name + "/*.TextGrid"
-                weeks = glob.glob(pattern)
+                # パターンマッチング：週iでなければcontinue
+                pattern = 'VOC_[0-9]+[-_][0-9]+_+[^_]*_+([^_]*).*'
+                tmp = re.findall(pattern ,str(labellist[j]))[0].replace("W","")
+                tmp = tmp.split(".")[0]
+                if not int(tmp) == i:
+                    continue
 
-                # callの数え上げ用辞書
-                # dict_label = call_init.copy()
-                for week in weeks:
-                    pattern = 'VOC_[0-9]+[-_][0-9]+_+[^_]*_+([^_]*).*'
-                    j = re.findall(pattern ,week)[0].replace("W","")
-                    if str(i) != j:
-                        continue
-                    # print(i,j)
-                    print(week)
-                    text = textgrid.TextGrid.fromFile(week) # text = [0:鳴き声, 1:ドア音][interval]    
+                ## no.loadtxt
+                labels = np.loadtxt(labellist[j],dtype=int)
+                results = np.loadtxt(resultlist[j],dtype=int)
+                
+                ## --- grouped ---
+                # labels = [k for k,g in itertools.groupby(labels)] 
+                # results = [k for k,g in itertools.groupby(results)] 
 
-                    # TextGridのIntervalごと
-                    for k in range(len(text[0])):
-                        call = text[0][k].mark # Phee, Trill, ...
-                        call = call.replace(' ', '') # " Unknown" -> "Unknown"
-                        call = call.upper() # phee-trill -> PHEE-TRILL
-                        call = call.title() # PHEE-TRILL -> Phee-Trill
+                ## --- カウント処理（そのままver）---
+                for label in labels:
+                    tmp1 = call_label[label]
+                    dict_label[tmp1] = dict_label.get(tmp1, 0) + 1                
+                
+                for result in results:
+                    tmp2 = call_label[result]
+                    dict_result[tmp2] = dict_result.get(tmp2, 0) + 1      
 
-                        # 空のIntervalはcontinue
-                        if call == "":
-                            continue
+                ## --- 回数化のため後処理 --- 
+                print("label",dict_label)
+                print("result",dict_result)
+                print("")
 
-                        # 辞書で修正
-                        call = correct_label[call]
+        # 週で集計，data.appendする
+        label_split = []
+        result_split = []
+        d1 = {}
+        d2 = {}
 
-                        if (call == "Phee-Trill" or
-                            call == "Trill-Phee"):
-                            continue
-                        elif (call == "Phee" or
-                              call == "Trill" or
-                              call == "Twitter"):
-                              call = call
-                        else:
-                            call = "Others"
-                  
-                        dict_label[call] = dict_label.get(call, 0) + 1 # {"Phee":0, "Trill":0, ...}
+        label_total = sum(dict_label.values())
+        result_total = sum(dict_result.values())
 
-            # 個体ごとに一度集計
-            # data_split = []
-            total = sum(dict_label.values())
-            d={} #空辞書の定義
-            count = 0
-            for n in dict_label:
-                if dict_label[n] == 0:
-                    d[n] = 0
-                else:
-                    d[n] = dict_label[n] / total #割合の計算
-                    count += dict_label[n]
-            # d_ratio = sorted(d.items(), key=lambda x: x[0], reverse=True)
-            # d_ratio = list(d.items())
-            d_ratio = list(dict_label.items())
-            for m in d_ratio:
-                print(m[0].ljust(10), '{}'.format(m[1]))
-                data_split.append(m[1])
-            # print("count=",count)
-            # print("")
-            print(len(data_split))
-            data.append(data_split)
+        for n in dict_label:
+            d1[n] = dict_label[n]/label_total
+            d2[n] = dict_result[n]/result_total
 
+        # d1_ratio = list(d1.items())
+        # d2_ratio = list(d2.items())
+        d1_ratio = list(dict_label.items())
+        d2_ratio = list(dict_result.items())
 
-        # 積み上げ棒グラフ
-        dataset = pd.DataFrame(data, index=tag, columns=lab)
-        print(dataset)
+        print("label")
+        for m in d1_ratio:
+            print(m[0].ljust(10), '{}'.format(m[1]))
+            label_split.append(m[1])
         print("")
-        dataset.plot.bar(stacked=True, color=label_color)
-        plt.legend(fontsize=8, bbox_to_anchor=(0, 1), loc='lower left', ncol=4, )
-        plt.ylabel("Call Ratio (%) ")
-        plt.xlabel("Week")
-        plt.title("{}".format(types[types_index]), y=1.08)
-        plt.tight_layout()
-        plt.savefig("./LabelRatio/LabelRatioWeeks_{}_ratio.pdf".format(types[types_index]))
-        plt.close()
+
+        print("result")
+        for m in d2_ratio:
+            print(m[0].ljust(10), '{}'.format(m[1]))
+            result_split.append(m[1])
+        print("")
+
+        label_data.append(label_split)
+        result_data.append(result_split)
+
+        # break
+
+    
+    # 積み上げグラフ
+    ## dataframe作成
+    dataset_label = pd.DataFrame(label_data, index=tag, columns=lab)
+    # dataset_result = pd.DataFrame(result_data, index=tag, columns=lab)
+    print(dataset_label)
+    # print(dataset_result)
+    csvpath = labelpath / "csv_frame.csv"
+    dataset_label.to_csv(csvpath)

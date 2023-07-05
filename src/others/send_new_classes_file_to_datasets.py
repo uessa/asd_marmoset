@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-
+#-------------------------------------#
+# 
+#
+#-------------------------------------#
 import os
 import re
 import sys
@@ -20,10 +23,10 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 if __name__ == "__main__":
 
-    labelpath = "" 
-    outputpath = ""
+    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_calc_uevpa_type/ue/" # for tests or vpasも忘れずに
+    outputpath = "/home/muesaka/projects/marmoset/datasets/subset_calc_uevpa_type/ue_new/"
 
-    files = [f for f in os.listdir(labelpath) if os.path.isfile(os.path.join(labelpath, f)) and f[-3:] == "wav"] # 末尾マッチ
+    files = [f for f in os.listdir(labelpath) if os.path.isfile(os.path.join(labelpath, f)) and f[-3:] == "txt"] # 末尾マッチ
 
     trains = ["カルビ","あいぴょん","真央","ブラウニー","花月","黄金","阿伏兎", 
                 "テレスドン","スカイドン","三春","会津","マティアス","エバート","ぶた玉","信成"]
@@ -33,7 +36,8 @@ if __name__ == "__main__":
     vpas = ["高萩","平磯","阿字ヶ浦","馬堀","三崎","ひばり","つぐみ","日向夏","八朔","桂島","松島"]
 
     # fileのfindとcp処理
-    names = ttt # 対象の個体ジャンル
+    
+    names = trains # 対象の個体ジャンル
 
     for i, file in enumerate(files):
 

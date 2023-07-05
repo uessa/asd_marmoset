@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-
+#-------------------------------------#
+# 
+#
+#-------------------------------------#
 import os
 import re
 import sys
@@ -39,8 +42,8 @@ if __name__ == "__main__":
     call_label = {0: "No Call", 1: "Phee", 2: "Trill", 3: "Twitter", 4: "Other Calls"} # ラベル番号の辞書
     call_init = {v: 0 for k,v in call_label.items()} # カウント用辞書
 
-    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa_check_othercalls/test/" # GroundTruth frame .txt Path
-    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa_check_othercalls/test/results/" # Estimate frame .txt Path
+    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue/test/" # GroundTruth frame .txt Path
+    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue/test/results/" # Estimate frame .txt Path
     outputpath = labelpath
 
     files = [f for f in os.listdir(labelpath) if os.path.isfile(os.path.join(labelpath, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
@@ -81,16 +84,30 @@ if __name__ == "__main__":
         num_label = call_init.copy()    
         num_results = call_init.copy()  
 
-        # labelのカウント
-        for k in grouped_label:
-            j = call_label[k]
-            num_label[j] = num_label.get(j,0) + 1
+        # # labelのカウント
+        # for k in grouped_label:
+        #     if k == 5 or k == 6 or k == 7:
+        #         continue
+        #     j = call_label[k]
+        #     num_label[j] = num_label.get(j,0) + 1
 
-        # resultsのカウント
-        for k in grouped_results:   
-            j = call_label[k]
-            num_results[j] = num_results.get(j,0) + 1
+        # # resultsのカウント
+        # for k in grouped_results:   
+        #     j = call_label[k]
+        #     num_results[j] = num_results.get(j,0) + 1
         
+        # label and resultsのカウント
+        for n in range(len(grouped_label)):
+            k = grouped_label[n]
+            l = grouped_results[n]
+            if k == 5 or k == 6 or k == 7:
+                continue
+            j1 = call_label[k]
+            j2 = call_label[l]
+            num_label[j1] = num_label.get(j1,0) + 1
+            num_results[j2] = num_results.get(j2,0) + 1
+
+
         # 確認用出力
         print(file,date,name)
 
@@ -100,7 +117,7 @@ if __name__ == "__main__":
         # list_label.append((name[0], float(date[0]), num_label)) # listにtupleとして追加していく
         # list_results.append((name[0], float(date[0]), num_results)) # listにtupleとして追加していく
 
-        break
+        # break
 
 
     is_plot = 1 #プロットするかどうか
@@ -117,7 +134,7 @@ if __name__ == "__main__":
         for lname in lnames:
         
             # ラベル名ごと
-            for fname in vpas:
+            for fname in tests:
 
                 week = np.empty(0,dtype=int)
                 count_label = []
@@ -139,7 +156,7 @@ if __name__ == "__main__":
                 fname = marmo_eng[fname]
                 plt.xlabel("Week")
                 plt.ylabel("Count")
-                plt.legend()
+                # plt.legend()
                 plt.title("UE_" + fname + "_" + lname)
                 week = np.arange(1,15,1)
                 plt.xticks(week)
@@ -156,5 +173,5 @@ if __name__ == "__main__":
                 print("save: {}".format(filename))
                 plt.close()
 
-                break
-            break
+                # break
+            # break

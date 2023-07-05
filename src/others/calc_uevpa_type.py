@@ -148,6 +148,7 @@ def del_nocall_tp(data, node_label):
     return tp(data, node_label)
 
 if __name__ == "__main__":
+    '''
     ######################## 2022年の名前 リスト ########################
     tests = ["Falco", "Haiji", "Kenshiro", "Kusukusu", "Shirushiru"] # UE
     vpas = ["Dior", "Diorella", "Francfranc", "Gabriela", "Galileo", "Marimo", "Sango"] # VPA
@@ -171,6 +172,37 @@ if __name__ == "__main__":
     ######################## 2022データのソート ########################
     results = sorted(results, key=lambda s: float(re.findall(r'[^_]*_alone_week([0-9]+).*', s)[0]))
     results = sorted(results, key=lambda s: re.findall(r'([^_]*)_alone_week[0-9]+.*', s)[0])
+
+    '''
+
+    ######################## 2021年の名前 リスト ########################
+    train = ["カルビ","あいぴょん","真央","ブラウニー","花月","黄金","阿伏兎", 
+                "テレスドン","スカイドン","三春","会津","マティアス","エバート","ぶた玉","信成"]
+    valid = ["鶴ヶ城","ミコノス","イカ玉"]
+    test = ["あやぴょん","ビスコッテイー","ドラコ","マルチナ","梨花"]
+    vpas = ["高萩","平磯","阿字ヶ浦","馬堀","三崎","ひばり","つぐみ","日向夏","八朔","桂島","松島"]
+    call_label = {1: "Phee",2: "Trill", 3: "Twitter", 4: "Other Calls"}
+    call_init = {'Phee':0, 'Trill':0, 'Twitter':0, 'Other Calls':0}
+    tag = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    lab = ["Phee", "Trill", "Twitter", "Other Calls"]
+    node_label = ["NoCall", 'Phee', 'Trill', "Twitter", "Other"]
+    # name_sets = [[tests[0],tests[1],tests[2]], 
+    #              [tests[3],tests[4]],
+    #              [vpas[0],vpas[1],vpas[2],vpas[3]],
+    #              [vpas[4],vpas[5],vpas[6]]]
+
+    tests = test + valid + train
+
+    ue_labelpath = "/home/muesaka/projects/marmoset/datasets/subset_calc_uevpa_type/ue/" # GroundTruth frame .txt Path
+    vpa_labelpath = "/home/muesaka/projects/marmoset/datasets/subset_calc_uevpa_type/vpa/" # GroundTruth frame .txt Path
+
+    ue_labels = [f for f in os.listdir(ue_labelpath) if os.path.isfile(os.path.join(ue_labelpath, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
+    vpa_labels = [f for f in os.listdir(vpa_labelpath) if os.path.isfile(os.path.join(vpa_labelpath, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
+    results = ue_labels + vpa_labels
+
+    ######################## 2021データのソート ########################
+    results = sorted(results, key=lambda s: float(re.findall(r'VOC_.*_.*_(.*)W', s)[0]))
+    results = sorted(results, key=lambda s: re.findall(r'VOC_.*_(.*)_.*', s)[0])
 
     ######################## 交差検証 ########################
     print("all_test:", tests)
@@ -199,10 +231,18 @@ if __name__ == "__main__":
             data_hstack_ue_unpick = np.empty(0, dtype=int) # ue unpickのラベル列の結合用
             for i, result in enumerate(results):
 
+                '''
                 ######################## 2022データ ########################
                 pattern = '[^_]*_alone_week([0-9]+).*'
                 date = re.findall(pattern ,result)[0]
                 pattern = '([^_]*)_alone_week[0-9]+.*'
+                name = re.findall(pattern ,result)[0]
+                '''
+
+                ######################## 2021データ ########################
+                pattern = 'VOC_.*_.*_(.*)W'
+                date = re.findall(pattern ,result)[0]
+                pattern = 'VOC_.*_(.*)_.*'
                 name = re.findall(pattern ,result)[0]
 
                 ######################## ue unpickのラベル列を抽出 ########################
@@ -216,11 +256,19 @@ if __name__ == "__main__":
             ######################## unpick個体のみでvpaの遷移表作成 ########################
             data_hstack_vpa_unpick = np.empty(0, dtype=int) # vpa unpickのラベル列の結合用
             for i, result in enumerate(results):
-
+                
+                '''
                 ######################## 2022データ ########################
                 pattern = '[^_]*_alone_week([0-9]+).*'
                 date = re.findall(pattern ,result)[0]
                 pattern = '([^_]*)_alone_week[0-9]+.*'
+                name = re.findall(pattern ,result)[0]
+                '''
+
+                ######################## 2021データ ########################
+                pattern = 'VOC_.*_.*_(.*)W'
+                date = re.findall(pattern ,result)[0]
+                pattern = 'VOC_.*_(.*)_.*'
                 name = re.findall(pattern ,result)[0]
 
                 ######################## vpa unpickのラベル列を抽出 ########################
@@ -236,10 +284,18 @@ if __name__ == "__main__":
             data_hstack_ue_pick = np.empty(0, dtype=int) # ue unpickのラベル列の結合用
             for i, result in enumerate(results):
 
+                '''
                 ######################## 2022データ ########################
                 pattern = '[^_]*_alone_week([0-9]+).*'
                 date = re.findall(pattern ,result)[0]
                 pattern = '([^_]*)_alone_week[0-9]+.*'
+                name = re.findall(pattern ,result)[0]
+                '''
+
+                ######################## 2021データ ########################
+                pattern = 'VOC_.*_.*_(.*)W'
+                date = re.findall(pattern ,result)[0]
+                pattern = 'VOC_.*_(.*)_.*'
                 name = re.findall(pattern ,result)[0]
 
                 ######################## ue unpickのラベル列を抽出 ########################
@@ -256,10 +312,18 @@ if __name__ == "__main__":
             data_hstack_vpa_pick = np.empty(0, dtype=int) # vpa unpickのラベル列の結合用
             for i, result in enumerate(results):
 
+                '''
                 ######################## 2022データ ########################
                 pattern = '[^_]*_alone_week([0-9]+).*'
                 date = re.findall(pattern ,result)[0]
                 pattern = '([^_]*)_alone_week[0-9]+.*'
+                name = re.findall(pattern ,result)[0]
+                '''
+
+                ######################## 2021データ ########################
+                pattern = 'VOC_.*_.*_(.*)W'
+                date = re.findall(pattern ,result)[0]
+                pattern = 'VOC_.*_(.*)_.*'
                 name = re.findall(pattern ,result)[0]
 
                 ######################## vpa unpickのラベル列を抽出 ########################
@@ -321,7 +385,7 @@ if __name__ == "__main__":
             print("-------------------------------------------------")
             
 
-        #     break
+            # break
         # break
     acc = anss/sums
     print(f"Acc:\t {acc}")

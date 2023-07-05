@@ -1,81 +1,112 @@
 # -*- coding: utf-8 -*-
+#-------------------------------------#
+# 
+#
+#-------------------------------------#
 import numpy as np
 import pathlib
 from multiprocessing import Pool
 import glob
 import re
 
-correct_label = {'B': 'Breath',
-                'Bbreath': 'Breath',
-                'Brearth': 'Breath',
-                'Breasth': 'Breath',
-                'Breath': 'Breath',
-                'Breathbreath': 'Breath',
-                'Breathg': 'Breath',
-                'Breathj': 'Breath',
-                'Breathy': 'Breath',
-                'Breatn': 'Breath',
-                'Breatrh': 'Breath',
-                'Breatyh': 'Breath',
-                'Brerath': 'Breath',
-                'Brwath': 'Breath',
-                'Btreath': 'Breath',
-                'Bvreath': 'Breath',
-                'C Ry': 'Cry',
-                'Chatter': 'Chatter',
-                'Chirp': 'Chirp',
-                'Chirpchirp': 'Chirp',
-                'Cough': 'Cough',
-                'Coughcough': 'Cough',
-                'Cry': 'Cry',
-                'E': 'Ek',
-                'Ek': 'Ek',
-                'Ek-Tsik': 'Ek',
-                'Ekek': 'Ek',
-                'Ekj': 'Ek',
-                'Ex': 'Ek',
-                'Hee': 'Phee',
-                'Intermittentphee': 'Others',
-                'Others': 'Others',
-                'Phee': 'Phee',
-                'Phee-Trill': 'Phee-Trill',
-                'Pheecry': 'Phee',
-                'PheeCry': 'Phee',
-                'Pheee': 'Phee',
-                'Pheephee': 'Phee',
-                'Phees': 'Phee',
-                'Reath': 'Breath',
-                'See': 'Others',
-                'Sneeze': 'Others',
-                'Snooze': 'Others',
-                'Treill': 'Trill',
-                'Treill-Phee': 'Trill-Phee',
-                'Trill': 'Trill',
-                'Trill-': 'Trill-Phee',
-                'Trill-Hee': 'Trill-Phee',
-                'Trill-Phee': 'Trill-Phee',
-                'Trill-phee': 'Trill-Phee',
-                'trill-Phee': 'Trill-Phee',
-                'Trilll': 'Trill',
-                'Tsik': 'Tsik',
-                'Tsiktsik': 'Tsik',
-                'Ttwitter': 'Twitter',
-                'Twiitter': 'Twitter',
-                'Twiter': 'Twitter',
-                'Twitteer': 'Twitter',
-                'Twitter': 'Twitter',
-                'Twitters': 'Twitter',
-                'Twittetr': 'Twitter',
-                'Twittrer': 'Twitter',
-                'Twittter': 'Twitter',
-                'Twitttter': 'Twitter',
-                'Unk': 'Unknown',
-                'Unkinown': 'Unknown',
-                'unknown': 'Unknown',
-                'Unknow': 'Unknown',
-                'Unknown': 'Unknown',
-                'Unknownhow': 'Unknown',
-                'Unknownbreath': 'Unknown'}
+correct_label = {
+    # "Noise": " ",
+    "Twitter": "Twitter",
+    "Trill": "Trill",
+    "Trill-phee": "Trill-Phee",
+    "Phee": "Phee",
+    "Cough": "Cough",
+    "Tsik": "Tsik",
+    "Cry": "Cry",
+    "Unknown": "Unknown",
+    "Ek": "Ek",
+    "Unknown ": "Unknown",
+    "Twitter ": "Twitter",
+    "Trill-Phee": "Trill-Phee",
+    "Phee-Trill": "Phee-Trill",
+    "Twitter  ": "Twitter",
+    "Phee-trill": "Phee-Trill",
+    "unknown": "Unknown",
+    "cough": "Cough",
+    "Phees": "Phee",
+    "phee": "Phee",
+    "twitter": "Twitter",
+    "Breath": "Breath",
+    "Snooze": "Sneeze",
+    "Chatter": "Chatter",
+    " Phee": "Phee",
+    "Unkinown": "Unknown",
+    "breath": "Breath",
+    "Twittter": "Twitter",
+    "Breatrh": "Breath",
+    "trill-Phee": "Trill-Phee",
+    "Treill": "Trill",
+    "Ex": "Ek",
+    "Twitttter": "Twitter",
+    "Twittetr": "Twitter",
+    "B": "Breath",
+    "Ek-Tsik": "Ek-Tsik",
+    "Unknow": "Unknown",
+    "Breathg": "Breath",
+    "Trilll": "Trill",
+    "Twittrer": "Twitter",
+    "Breath ": "Breath",
+    "Phee ": "Phee",
+    "Breatn": "Breath",
+    "Brwath": "Breath",
+    "brerath": "Breath",
+    "Intermittent phee": "Intermittent Phee",
+    "Ek ": "Ek",
+    "Pheee": "Phee",
+    "Sneeze": "Sneeze",
+    "EkEk": "Ek",
+    "Brearth": "Breath",
+    "BVreath": "Breath",
+    "Breatyh": "Breath",
+    "Chirp": "Chirp",
+    "tsik": "Tsik",
+    "Breasth": "Breath",
+    "Ekj": "Ek",
+    "ek": "Ek",
+    "PheeCry": "Cry",
+    "Treill-Phee": "Trill-Phee",
+    "UnknownBreath": "Breath",
+    "Breathy": "Breath",
+    "Trill-": "Trill",
+    "Ttwitter": "Twitter",
+    "Breathj": "Breath",
+    "Trill-hee": "Trill-Phee",
+    "Twitters ": "Twitter",
+    "EK": "Ek",
+    "See": "Phee",
+    "reath": "Breath",
+    "E": "Ek",
+    "PheePhee": "Phee",
+    "BreathBreath": "Breath",
+    "ChirpChirp": "Chirp",
+    "Btreath": "Breath",
+    "Twitteer": "Twitter",
+    "CoughCough": "Cough",
+}
+
+calls = {
+    "Twitter",
+    "Trill",
+    "Trill-Phee",
+    "Phee",
+    "Cough",
+    "Tsik",
+    "Cry",
+    "Unknown",
+    "Ek",
+    "Phee-Trill",
+    "Breath",
+    "Sneeze",
+    "Chatter",
+    "Ek-Tsik",
+    "Intermittent Phee",
+    "Chirp",
+    }
 
 def find_calltype(list_text):
     type_call = ['Noise']
@@ -85,8 +116,11 @@ def find_calltype(list_text):
             if ground_truth_data[t, 1] == 'Call' or ground_truth_data[t, 1] == 'Calls':
                 if not (ground_truth_data[t, 2] in type_call):
                     type_call.append(ground_truth_data[t, 2])
-    print("type_call=",type_call)
-    print("len(type_call)=",len(type_call))
+                    # print("\"{}\": \" \",".format(ground_truth_data[t, 2]))
+                    # print(ground_truth_data[t,0], ground_truth_data[t, 3])
+                    # print(data)
+                    # print("")
+                    print(ground_truth_data[t,2])        
 
 def remake_calltype(list_text):
     type_call = ['Noise']
@@ -97,9 +131,9 @@ def remake_calltype(list_text):
                 # print("pass")
                 if not (ground_truth_data[t, 2] in type_call):
                      call = ground_truth_data[t, 2]
-                     call = call.replace(' ', '') # "Unk nown " -> "Unknown"
-                     call = call.upper() # phee-trill -> PHEE-TRILL
-                     call = call.title() # PHEE-TRILL -> Phee-Trill
+                    #  call = call.replace(' ', '') # "Unk nown " -> "Unknown"
+                    #  call = call.upper() # phee-trill -> PHEE-TRILL
+                    #  call = call.title() # PHEE-TRILL -> Phee-Trill
                      ground_truth_data[t, 2] = correct_label[call]
         np.savetxt(data, ground_truth_data, fmt="%s", delimiter="\t")
         # print("save")
@@ -109,19 +143,20 @@ def remake_calltype(list_text):
 
 if __name__ == "__main__":
 
-    path = "/home/muesaka/projects/marmoset/raw/marmoset_11vpa_text"
+    path1 = "/home/muesaka/projects/marmoset/raw/marmoset_23ue_text/nog_remake"
+    path2 = "/home/muesaka/projects/marmoset/raw/marmoset_11vpa_text/nog_remake"
 
-    path_text1 = pathlib.Path(path)
-    list_text1 = path_text1.glob("*.txt")
-    find_calltype(list_text1)
+    path_text1 = pathlib.Path(path1)
+    list_text1 = list(path_text1.glob("*.txt"))
+    path_text2 = pathlib.Path(path2)
+    list_text2 = list(path_text2.glob("*.txt"))
 
-    path_text1 = pathlib.Path(path)
-    list_text1 = path_text1.glob("*.txt")
-    remake_calltype(list_text1)
+    find_calltype(list_text1 + list_text2)
 
-    path_text1 = pathlib.Path(path)
-    list_text1 = path_text1.glob("*.txt")
-    find_calltype(list_text1)
+    # remake_calltype(list_text1)
+    # remake_calltype(list_text2)
+
+    # find_calltype(list_text1 + list_text2)
 
 
 
