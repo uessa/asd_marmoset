@@ -29,11 +29,13 @@ from matplotlib.colors import Normalize
 
 import numpy as np
 
+
 def del_nocall_data(data):
     data = data[~(data==0)]
     data = data-1
 
     return data
+
 
 def calc_transition(ue_unpick, vpa_unpick, pick):
     # ue_unpick = del_nocall_data(ue_unpick)
@@ -135,7 +137,7 @@ def tp(transition_probability, label):
                 zero[x][y] += 1
 
     row_sum = np.sum(zero, axis=1).reshape((np.max(data)+1,1))
-    prob    = zero / row_sum
+    prob = zero / row_sum
     # print(prob)
 
     return prob
@@ -305,8 +307,8 @@ if __name__ == "__main__":
                     data_hstack_ue_pick = np.hstack([data_hstack_ue_pick, data])
 
             print("ue_pick \t", len(data_hstack_ue_pick))
-            prob_ue_pick = del_nocall_tp(data_hstack_ue_pick, copy.deepcopy(node_label))
-            # prob_ue_pick = data_hstack_ue_pick
+            # prob_ue_pick = del_nocall_tp(data_hstack_ue_pick, copy.deepcopy(node_label))
+            prob_ue_pick = data_hstack_ue_pick
 
             ######################## pick個体のみでvpaの遷移表作成 ########################
             data_hstack_vpa_pick = np.empty(0, dtype=int) # vpa unpickのラベル列の結合用
@@ -333,8 +335,8 @@ if __name__ == "__main__":
                     data_hstack_vpa_pick = np.hstack([data_hstack_vpa_pick, data])
             
             print("vpa_pick \t", len(data_hstack_vpa_pick))
-            prob_vpa_pick = del_nocall_tp(data_hstack_vpa_pick, copy.deepcopy(node_label))
-            # prob_vpa_pick = data_hstack_vpa_pick
+            # prob_vpa_pick = del_nocall_tp(data_hstack_vpa_pick, copy.deepcopy(node_label))
+            prob_vpa_pick = data_hstack_vpa_pick
 
             ######################## pick個体（ue, vpa）をUEかVPAか判定：cos類似度 か L2ノルム ########################
             print(prob_ue_unpick)
@@ -342,8 +344,11 @@ if __name__ == "__main__":
             print(prob_vpa_unpick)
             print(prob_vpa_pick)
 
-            test_ans = compare_matrices_oneline(prob_ue_unpick, prob_vpa_unpick, prob_ue_pick)
-            vpa_ans = compare_matrices_oneline(prob_ue_unpick, prob_vpa_unpick, prob_vpa_pick)
+            # test_ans = compare_matrices_oneline(prob_ue_unpick, prob_vpa_unpick, prob_ue_pick)
+            # vpa_ans = compare_matrices_oneline(prob_ue_unpick, prob_vpa_unpick, prob_vpa_pick)
+            
+            test_ans = calc_transition(prob_ue_unpick, prob_vpa_unpick, prob_ue_pick)
+            vpa_ans = calc_transition(prob_ue_unpick, prob_vpa_unpick, prob_vpa_pick)
 
             ######################## pick個体（ue, vpa）をUEかVPAか判定：L2ノルム（ユークリッド距離） ########################
             # print(f"prob_ue_unpick")
@@ -357,8 +362,7 @@ if __name__ == "__main__":
             # print(f"{prob_vpa_pick[0:10]}")
             # print("")
 
-            # test_ans = calc_transition(prob_ue_unpick, prob_vpa_unpick, prob_ue_pick)
-            # vpa_ans = calc_transition(prob_ue_unpick, prob_vpa_unpick, prob_vpa_pick)
+
 
 
             if test_ans == "UE":
