@@ -76,9 +76,15 @@ if __name__ == "__main__":
         filename = marmo_eng[name[0]] + "_" + date[0]
         # make_confusion_matrix(label, results, [0,1,2,3,4], labelpath, filename)
         
-        # フレームのラベルをgroupingで連続同値を順列にまとめて単純化
-        grouped_label = [k for k,g in itertools.groupby(label)] 
-        grouped_results = [k for k,g in itertools.groupby(results)] 
+        # modeごとにフレームをそのままか回数化するか選ぶ
+        plot_mode = "frame"
+        
+        if plot_mode == "frame":
+            grouped_label = label
+            grouped_results = results
+        else:
+            grouped_label = [k for k,g in itertools.groupby(label)] 
+            grouped_results = [k for k,g in itertools.groupby(results)] 
 
         # カウント用辞書
         num_label = call_init.copy()    
@@ -86,8 +92,6 @@ if __name__ == "__main__":
 
         # labelのカウント
         for k in grouped_label:
-            if k == 5 or k == 6 or k == 7:
-                continue
             j = call_label[k]
             num_label[j] = num_label.get(j,0) + 1
 
@@ -199,17 +203,8 @@ if __name__ == "__main__":
             # print(data)
             df = pd.DataFrame(data)
             # print(df)
-            csv_filename = dirpath + "week_count_" + fname + ".csv"
-            # print(csv_filename)
-            df.to_csv(csv_filename, index=False)
-            
-            # pdf
-            # plt.figure()
-            # ax = df.plot
-            # df.plot()
-            # df_pdf_filename = dirpath + "week_count_" + fname + "pdf"            
-            # plt.savefig(df_pdf_filename, format="pdf")
-            # plt.close("all")
+
+        
             
             
             # グラフを作成
@@ -221,16 +216,26 @@ if __name__ == "__main__":
                 plt.plot(df['week'], df[col_gt], color=colors[i//2], linestyle='-', label=f'{col_gt}')
                 plt.plot(df['week'], df[col_est], color=colors[i//2], linestyle='--', label=f'{col_est}')
 
+            plt.legend(loc="upper right")
             plt.xlabel("Week")
-            # x軸の目盛りを自動的に設定
-            # plt.locator_params(axis='x', tight=True, nbins=len(df['week']))
             plt.xticks(df['week'])
-            plt.ylabel("Count of Call")
-            plt.title(f"Distribution of Call Classification Counts ({fname})")
-            plt.legend()
-
+            
+            if plot_mode == "frame":
+                plt.ylabel("Count of Frame")
+                plt.title(f"Distribution of Call Classification Frames ({fname})")
+                df_pdf_filename = dirpath + "week_frame_" + fname + ".pdf"            
+                csv_filename = dirpath + "week_frame_" + fname + ".csv"
+                df.to_csv(csv_filename, index=False)
+                
+            elif plot_mode == "count":
+                plt.ylabel("Count of Count")
+                plt.title(f"Distribution of Call Classification Counts ({fname})")
+                df_pdf_filename = dirpath + "week_count_" + fname + ".pdf"
+                
+                csv_filename = dirpath + "week_count_" + fname + ".csv"
+                df.to_csv(csv_filename, index=False)
+            
             # pdfファイルに保存
-            df_pdf_filename = dirpath + "week_count_" + fname + ".pdf"            
             plt.savefig(df_pdf_filename, format="pdf")
 
             # グラフを表示せずにメモリを解放（必要に応じて）
