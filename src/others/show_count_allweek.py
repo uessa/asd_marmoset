@@ -39,11 +39,11 @@ if __name__ == "__main__":
     vpakids_eng = {"つぐみ": "tsugumi", "ひばり": "hibari",}
     marmo_eng = {**ue_eng, **sal_eng, **vpa_eng, **vpakids_eng}
 
-    call_label = {0: "No Call", 1: "Phee", 2: "Trill", 3: "Twitter", 4: "Other Calls"} # ラベル番号の辞書
+    call_label = {0: "no call", 1: "phee", 2: "trill", 3: "twitter", 4: "other"} # ラベル番号の辞書
     call_init = {v: 0 for k,v in call_label.items()} # カウント用辞書
 
-    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue/test/" # GroundTruth frame .txt Path
-    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue/test/results/" # Estimate frame .txt Path
+    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka/test/" # GroundTruth frame .txt Path
+    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka/test/results/" # Estimate frame .txt Path
     outputpath = labelpath
 
     files = [f for f in os.listdir(labelpath) if os.path.isfile(os.path.join(labelpath, f)) and f[-3:] == "txt"] # 末尾3文字まで（.txt）マッチ
@@ -53,7 +53,7 @@ if __name__ == "__main__":
                 "テレスドン","スカイドン","三春","会津","マティアス","エバート","ぶた玉","信成"]
     valids = ["鶴ヶ城","ミコノス","イカ玉"]
     tests = ["あやぴょん","ビスコッテイー","ドラコ","マルチナ","梨花"]
-    lnames = ["Phee","Trill","Twitter","Other Calls"]
+    lnames = ["phee","trill","twitter","other"]
     vpas = ["高萩","平磯","阿字ヶ浦","馬堀","三崎","ひばり","つぐみ","日向夏","八朔","桂島","松島"]
 
     files.sort()
@@ -84,32 +84,36 @@ if __name__ == "__main__":
         num_label = call_init.copy()    
         num_results = call_init.copy()  
 
-        # # labelのカウント
-        # for k in grouped_label:
-        #     if k == 5 or k == 6 or k == 7:
-        #         continue
-        #     j = call_label[k]
-        #     num_label[j] = num_label.get(j,0) + 1
-
-        # # resultsのカウント
-        # for k in grouped_results:   
-        #     j = call_label[k]
-        #     num_results[j] = num_results.get(j,0) + 1
-        
-        # label and resultsのカウント
-        for n in range(len(grouped_label)):
-            k = grouped_label[n]
-            l = grouped_results[n]
+        # labelのカウント
+        for k in grouped_label:
             if k == 5 or k == 6 or k == 7:
                 continue
-            j1 = call_label[k]
-            j2 = call_label[l]
-            num_label[j1] = num_label.get(j1,0) + 1
-            num_results[j2] = num_results.get(j2,0) + 1
+            j = call_label[k]
+            num_label[j] = num_label.get(j,0) + 1
+
+        # resultsのカウント
+        for k in grouped_results:   
+            j = call_label[k]
+            num_results[j] = num_results.get(j,0) + 1
+        
+        # label and resultsのカウント
+        # for n in range(len(grouped_label)):
+        #     print(len(grouped_label))
+        #     print(len(grouped_results))
+        #     k = grouped_label[n]
+        #     # print(grouped_label[n])
+        #     # print(grouped_results[n])
+        #     l = grouped_results[n]
+        #     if k == 5 or k == 6 or k == 7:
+        #         continue
+        #     j1 = call_label[k]
+        #     j2 = call_label[l]
+        #     num_label[j1] = num_label.get(j1,0) + 1
+        #     num_results[j2] = num_results.get(j2,0) + 1
 
 
         # 確認用出力
-        print(file,date,name)
+        # print(file,date,name)
 
         # ファイルごとにlistへ(個体名，週，カウント結果)をappend
         list_label.append((name[0], math.floor(float(date[0])), num_label)) # tupleとして追加していく
@@ -121,6 +125,9 @@ if __name__ == "__main__":
 
 
     is_plot = 1 #プロットするかどうか
+    # plt.rcParams["font.family"] = "Times New Roman" # 英論文用フォントファミリー
+        
+    plt.rc('pdf', fonttype=42) # フォントを埋め込む（Type1，つまり42を指定）
 
     # listをtupleの要素でsortしておく
     list_label.sort(key = lambda x: x[1]) # 2番目の要素＝週でsort
@@ -130,12 +137,17 @@ if __name__ == "__main__":
     
     if is_plot: 
         
-        # 個体名ごと
-        for lname in lnames:
         
-            # ラベル名ごと
-            for fname in tests:
-
+        for fname in tests:
+        
+            # fname = marmo_eng[fname]
+            # data = {'Week': week}
+            # print(len(week))
+            data = {}
+            # print(list_label)
+            for lname in lnames:
+                print(lname, fname)
+                
                 week = np.empty(0,dtype=int)
                 count_label = []
                 count_results = []
@@ -143,17 +155,27 @@ if __name__ == "__main__":
                 select_label = list(filter(lambda x: x[0] == fname, list_label))
                 select_results = list(filter(lambda x: x[0] == fname, list_results))
 
+                print(len(select_label))
                 for i in range(len(select_label)):
                     week = np.append(week,select_label[i][1])
                     count_label.append(select_label[i][2][lname])
                     count_results.append(select_results[i][2][lname])
+                
+                # csv 
+                data['week'] = week
+                print(len(week))
+                data[lname + "_annot."] = count_label
+                print(len(count_label))
+                data[lname + "_est."] = count_results
+                print(len(count_label))
+                
                 
                 # plot1
                 # 棒グラフ（隣接させた）を，時系列で並べる
                 plt.bar(week-0.2/2, count_label, label="Ground Truth", width=0.2) #隣接左側に正解
                 plt.bar(week+0.2/2, count_results,label="Estimated", width=0.2) #隣接右側にに推定
 
-                fname = marmo_eng[fname]
+                
                 plt.xlabel("Week")
                 plt.ylabel("Count")
                 # plt.legend()
@@ -169,9 +191,51 @@ if __name__ == "__main__":
 
                 # ファイル作成 /show_count_[個体名]_[ラベル名].pdf
                 filename = dirpath + "show_count_" + fname + "_" +  lname + ".pdf"
-                plt.savefig(filename)
-                print("save: {}".format(filename))
-                plt.close()
+                # plt.savefig(filename)
+                # print("save: {}".format(filename))
+                # plt.close()
+            
+            # csv
+            # print(data)
+            df = pd.DataFrame(data)
+            # print(df)
+            csv_filename = dirpath + "week_count_" + fname + ".csv"
+            # print(csv_filename)
+            df.to_csv(csv_filename, index=False)
+            
+            # pdf
+            # plt.figure()
+            # ax = df.plot
+            # df.plot()
+            # df_pdf_filename = dirpath + "week_count_" + fname + "pdf"            
+            # plt.savefig(df_pdf_filename, format="pdf")
+            # plt.close("all")
+            
+            
+            # グラフを作成
+            plt.figure()
+            colors = ['b', 'g', 'r', 'c']  # ペアごとに使用する色を指定
+            for i in range(1, len(df.columns), 2):
+                col_gt = df.columns[i]
+                col_est = df.columns[i + 1]
+                plt.plot(df['week'], df[col_gt], color=colors[i//2], linestyle='-', label=f'{col_gt}')
+                plt.plot(df['week'], df[col_est], color=colors[i//2], linestyle='--', label=f'{col_est}')
 
+            plt.xlabel("Week")
+            # x軸の目盛りを自動的に設定
+            # plt.locator_params(axis='x', tight=True, nbins=len(df['week']))
+            plt.xticks(df['week'])
+            plt.ylabel("Count of Call")
+            plt.title(f"Distribution of Call Classification Counts ({fname})")
+            plt.legend()
+
+            # pdfファイルに保存
+            df_pdf_filename = dirpath + "week_count_" + fname + ".pdf"            
+            plt.savefig(df_pdf_filename, format="pdf")
+
+            # グラフを表示せずにメモリを解放（必要に応じて）
+            plt.close()
+
+            
                 # break
             # break
