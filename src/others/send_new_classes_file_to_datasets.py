@@ -23,8 +23,8 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 if __name__ == "__main__":
 
-    labelpath = "/home/muesaka/projects/marmoset/datasets/subset_calc_uevpa_type/ue/" # for tests or vpasも忘れずに
-    outputpath = "/home/muesaka/projects/marmoset/datasets/subset_calc_uevpa_type/ue_new/"
+    labelpath = "/home/muesaka/projects/marmoset/raw/marmoset_11vpa_text/nog_remake/label_13class_48kHz/" # for tests or vpasも忘れずに
+    outputpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_11vpa_muesaka_48kHz/test/label_13class_48kHz/"
 
     files = [f for f in os.listdir(labelpath) if os.path.isfile(os.path.join(labelpath, f)) and f[-3:] == "txt"] # 末尾マッチ
 
@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     # fileのfindとcp処理
     
-    names = trains # 対象の個体ジャンル
+    names = vpas # 対象の個体ジャンル
 
     for i, file in enumerate(files):
 

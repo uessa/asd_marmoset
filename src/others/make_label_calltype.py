@@ -32,8 +32,8 @@ def write_label(list_file):
     # parameters
     fftlen = 2048
     fftsft = fftlen // 2
-    fs = 96000
-    sig, fs = librosa.load(list_file[1], sr=None, mono=False)
+    fs = 48000
+    sig, fs = librosa.load(list_file[1], sr=fs, mono=False)
     n_frame = (np.ceil((len(sig[0]) - fftlen) / fftsft) + 5).astype(int)
     print(n_frame)
 
@@ -58,19 +58,44 @@ def write_label(list_file):
             ed_time = np.round(float(t[3])*fs)
             ed_frame_marmoset = np.floor(ed_time / fftsft).astype(int)
 
-            if 'phee' in t[2].lower() and len(t[2]) < 6:
-                # 開始から終了までを1に設定
+            # ##### 8クラス #####
+            
+            # if 'phee' in t[2].lower() and len(t[2]) < 6:
+            #     Marmoset += ['1'] * (ed_frame_marmoset - st_frame + 1)
+                
+            # elif 'trill' in t[2].lower() and len(t[2]) < 7:
+            #     Marmoset += ['2'] * (ed_frame_marmoset - st_frame + 1)
+
+            # elif 'twitter' in t[2].lower():
+            #     Marmoset += ['3'] * (ed_frame_marmoset - st_frame + 1)
+
+            # elif 'phee-trill' in t[2].lower() and len(t[2]):
+            #     Marmoset += ['5'] * (ed_frame_marmoset - st_frame + 1)
+
+            # elif 'trill-phee' in t[2].lower():
+            #     Marmoset += ['6'] * (ed_frame_marmoset - st_frame + 1)
+
+            # elif 'unknown' in t[2].lower():
+            #     Marmoset += ['7'] * (ed_frame_marmoset - st_frame + 1)
+
+            # else:
+            #     Marmoset += ['4'] * (ed_frame_marmoset - st_frame + 1) # 想定ラベル以外は”others”としてに集約
+            
+            
+            ##### 13クラス #####
+            if 'phee' in t[2].lower() and len(t[2]) < 6: # 6未満としphee-trillと区別
                 Marmoset += ['1'] * (ed_frame_marmoset - st_frame + 1)
-            elif 'trill' in t[2].lower() and len(t[2]) < 7:
+                
+            elif 'trill' in t[2].lower() and len(t[2]) < 7: # 7未満としtrill-pheeと区別
                 Marmoset += ['2'] * (ed_frame_marmoset - st_frame + 1)
 
             elif 'twitter' in t[2].lower():
                 Marmoset += ['3'] * (ed_frame_marmoset - st_frame + 1)
 
-            elif 'tsik' in t[2].lower() and len(t[2]) < 6:
+            elif 'tsik' in t[2].lower() and len(t[2]) < 6: # 6未満としek-tsikと区別
                 Marmoset += ['4'] * (ed_frame_marmoset - st_frame + 1)
 
-            elif 'ek' in t[2].lower() and len(t[2]) < 4:
+            elif 'ek' in t[2].lower() and len(t[2]) < 4: # 4未満としek-tsikと区別
                 Marmoset += ['5'] * (ed_frame_marmoset - st_frame + 1)
 
             elif 'ek-tsik' in t[2].lower():
@@ -97,12 +122,9 @@ def write_label(list_file):
             elif 'trill-phee' in t[2].lower():
                 Marmoset += ['13'] * (ed_frame_marmoset - st_frame + 1)
 
-            # elif 'unknown' in t[2].lower():
-            #     Marmoset += ['7'] * (ed_frame_marmoset - st_frame + 1)
-
             else:
-                # Marmoset += ['4'] * (ed_frame_marmoset - st_frame + 1)        
-                Marmoset += ['11'] * (ed_frame_marmoset - st_frame + 1)
+                Marmoset += ['11'] * (ed_frame_marmoset - st_frame + 1) # 想定ラベル以外は”unknown”としてに集約
+            
 
     # 音声終了までのフレームを0で埋める, 末尾zero padding込
     if len(Marmoset) < n_frame:

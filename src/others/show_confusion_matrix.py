@@ -67,12 +67,12 @@ def make_confusion_matrix(cm, outputpath): #
 if __name__ == "__main__":
 
     
-    # 正解データ，推定データのディレクトリ，結果出力のディレクトリ
-    labelpath = pathlib.Path("/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka/test")
-    resultpath = pathlib.Path("/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka/test/results_5class_before")
+    # ディレクトリ
+    labelpath = pathlib.Path("/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka_48kHz/test/label_13class") #正解ラベル
+    resultpath = pathlib.Path("/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka_48kHz/test/results_5class_Conv_k20_d21") #推定ラベル
     outputpath = pathlib.Path("./LabelRatio/")
 
-    # 正解データ，推定データのファイル名をリスト化
+    # ファイル名をリスト化
     labels = list(labelpath.glob("*.txt"))
     results = list(resultpath.glob("*.txt"))
 

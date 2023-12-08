@@ -50,7 +50,7 @@ if __name__ == "__main__":
     is_plot = 1 # plot on/off
 
     labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka/test/" # GroundTruth frame .txt Path
-    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka/test/results_5class_before/" # Estimate frame .txt Path
+    resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_muesaka/test/results/" # Estimate frame .txt Path
     # labelpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_hkawauchi/test_wo_pheetrill/labels/" # GroundTruth frame .txt Path
     # resultpath = "/home/muesaka/projects/marmoset/datasets/subset_marmoset_23ue_hkawauchi/test_wo_pheetrill/results/" # Estimate frame .txt Path
 
@@ -100,9 +100,9 @@ if __name__ == "__main__":
             plt.plot(label_sec, label == 1, "b", label="1:"+call_label[1], lw=lw) # Phee
             plt.plot(label_sec, label == 2, "g", label="2:"+call_label[2], lw=lw) # Trill
             plt.plot(label_sec, label == 3, "r", label="3:"+call_label[3], lw=lw) # Twitter
-            plt.plot(label_sec, label == 5, "c", label="5:"+call_label[5], lw=lw) # Phee-Trill
-            plt.plot(label_sec, label == 6, "m", label="6:"+call_label[6], lw=lw) # Trill-Phee
-            # plt.plot(label_sec, label == 4, "c", label="4:"+call_label[4], lw=lw) # Other Calls
+            # plt.plot(label_sec, label == 5, "c", label="5:"+call_label[5], lw=lw) # Phee-Trill
+            # plt.plot(label_sec, label == 6, "m", label="6:"+call_label[6], lw=lw) # Trill-Phee
+            plt.plot(label_sec, label == 4, "c", label="4:"+call_label[4], lw=lw) # Other Calls
             plt.xlim([x_min,x_max])
             plt.yticks([0,1],["NoCall","Call"])
             plt.title(title)
@@ -124,5 +124,6 @@ if __name__ == "__main__":
             plt.tight_layout() # plot layout spacing
             plt.savefig(labelpath + "frame_" + marmo_eng[name[0]] + date[0] + ".pdf")
             plt.close()
+        break
             
 
