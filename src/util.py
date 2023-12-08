@@ -106,17 +106,23 @@ def masked_cross_entropy(outputs, labels):
     # twitter = 1.0/458947.0
     # other = 1.0/65162
 
-    nocall = 1.0
-    phee = 1.0
-    trill = 1.0
-    twitter = 1.0
-    other = 1.0
+    # nocall = 1.0
+    # phee = 1.0
+    # trill = 1.0
+    # twitter = 1.0
+    # other = 1.0
 
+    print(f"---masked_cross_entropy---")
+    labels = labels.squeeze(dim=1) # ConvMixerのoutputsの次元サイズに合わせてlablesを調整
+    print(f"labels.shape: {labels.shape}")
+    print(f"outputs.shape: {outputs.shape}")
 
-    device = torch.device("cuda:0")
-    weights = torch.tensor([nocall, phee, trill, twitter, other]).to(device)
-    criterion = nn.CrossEntropyLoss(weight=weights, ignore_index=-1)
+    # device = torch.device("cuda:3")
+    # weights = torch.tensor([nocall, phee, trill, twitter, other]).to(device)
+    # criterion = nn.CrossEntropyLoss(weight=weights, ignore_index=-1)
 
-    # criterion = nn.CrossEntropyLoss(ignore_index=-1)
+    criterion = nn.CrossEntropyLoss(ignore_index=-1)
     loss = criterion(outputs, labels)
+    
+    print("")
     return loss

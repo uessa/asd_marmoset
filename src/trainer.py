@@ -8,6 +8,7 @@ from torch import autograd
 import torch.nn.functional as F
 
 from util import AverageMeter
+import util
 
 
 class Trainer(metaclass = ABCMeta):
@@ -74,27 +75,21 @@ class CNNTrainer(ClassifierTrainer):
         self.net.eval()
         correct = 0
         total = 0
+        total_loss = 0.0
         with torch.no_grad():
             for inputs, labels in dataloader:
                 inputs = inputs.to(self.device)
                 labels = labels.to(self.device)
 
-                outputs = self.net(inputs)
-                # ###
-                # print("outputs.data: {}".format(outputs.data))
-                # print("inputs: {}".format(inputs))
-                # # ###
-                _, predicted = torch.max(outputs.data, 1)
-                # # ###
-                # print("predicted: {}".format(predicted))
-                # ###
-                total += labels.size(0) * labels.size(-1)
-                correct += (predicted == labels).sum().item()
-                # ###
-                # print("total: {}".format(total))
-                # print("correct: {}".format(correct))
-                # ###
-        return correct / total
+                outputs = self.net(inputs) # ネットワークの出力
+                loss = util.masked_cross_entropy(outputs, labels) # loss計算
+                total_loss += loss.item()
+                _, predicted = torch.max(outputs.data, 1) # ソフトマックス処理
+
+                total += labels.size(0) * labels.size(-1) # 全体のフレームの総数
+                correct += (predicted == labels).sum().item() # 正解したフレームの総数
+
+        return correct / total, total_loss / len(dataloader.dataset)
 
 
 class RegressorTrainer(Trainer):

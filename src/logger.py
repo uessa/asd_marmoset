@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import matplotlib.pyplot as plt
+import path
 
 plt.switch_backend("agg")
 
@@ -29,19 +30,20 @@ class Logger:
 
 
 def plot_loss(path, results_train, results_valid):
-    plt.plot(results_train["loss"], label="train")
-    plt.plot(results_valid["loss"], label="valid")
+    plt.plot(results_train, label="train")
+    plt.plot(results_valid, label="valid")
     plt.legend()
     plt.title("loss")
-    plt.savefig(path / "loss.png")
+    plt.savefig(path.model / "loss.png")
     plt.clf()
-
+    plt.close()
 
 def plot_acc(path, results_train, results_valid):
     plt.plot(results_train["accuracy"], label="train")
     plt.plot(results_valid["accuracy"], label="valid")
     plt.legend()
     plt.title("accuracy")
-    plt.savefig(path / "accuracy.png")
+    plt.savefig(path.model / "accuracy.png")
     plt.clf()
+    plt.close()
 

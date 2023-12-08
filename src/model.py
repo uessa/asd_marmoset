@@ -3,6 +3,141 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchsummary import summary
 
+class ConvMixer(nn.Module):
+    class ConvMixerLayer(nn.Module):
+        def __init__(self, hidden_dims, kernel_size, dilation):
+            super().__init__()
+            self.hidden_dims = hidden_dims
+            self.kernel_size = kernel_size
+            self.dilation = dilation
+
+            self.depthwise_block = nn.Sequential(
+                nn.Conv1d(
+                    hidden_dims, hidden_dims, kernel_size=kernel_size, groups=hidden_dims, padding="same", dilation=dilation
+                ),
+                nn.GELU(),
+                nn.BatchNorm1d(hidden_dims)
+            )
+
+            self.pointwise_block = nn.Sequential(
+                nn.Conv1d(
+                    hidden_dims, hidden_dims, kernel_size=1
+                ),
+                nn.GELU(),
+                nn.BatchNorm1d(hidden_dims),
+            )
+        
+        def forward(self, x):
+            print('debug4: ', x.shape)
+            x = self.depthwise_block(x) + x
+            print('debug5: ', x.shape)
+            # print("")
+            return self.pointwise_block(x)
+
+    def __init__(
+        self,
+        # input_shape, ######################
+        # frame_length,######################
+        frequency_length,
+        hidden_dims,
+        # num_classes,######################
+        depth,
+        kernel_size,
+        is_dilated=False,
+        # gap_direction="time" ######################
+        ):
+        super().__init__()
+        # self.input_shape = input_shape # (C, T) or (C, F, T) #######################
+        
+        # self.output_shape = self.calc_embedding_shape( ######################
+        #     # input_shape, #####################
+        #     # frame_length, #####################
+        #     hidden_dims
+        # )
+        # length = self.output_shape[-1]
+        
+        # self.frame_length = frame_length ######################
+        self.frequency_length = frequency_length
+        self.hidden_dims = hidden_dims
+        # self.num_classes = num_classes ######################
+        self.depth = depth
+        self.kernel_size = kernel_size
+        self.is_dilated = is_dilated
+        
+        # if gap_direction in ["time", "channel"]: ######################
+        #     self.gap_direction = gap_direction
+        # else:
+        #     raise NotImplementedError()
+
+        # if len(input_shape) == 2: ######################
+        #     in_channels = input_shape[0]
+        # elif len(input_shape) > 2:
+        # in_channels = 1
+        # for s in input_shape[:-1]:
+        #     in_channels *= s
+        # else:
+        #     raise ValueError("Dimension of input_shape must be >= 2")
+        in_channels = self.frequency_length
+        
+        self.frame_embedding = nn.Sequential(
+            nn.Conv1d(
+                in_channels, hidden_dims, kernel_size=1
+            ),
+            nn.GELU(),
+            nn.BatchNorm1d(hidden_dims)
+            # nn.LayerNorm([hidden_dims, length])
+        )
+
+        if is_dilated:
+            self.blocks = nn.Sequential(
+                *[ConvMixer.ConvMixerLayer(hidden_dims, kernel_size, dilation=2**i) for i in range(depth)]
+            )
+        else:
+            self.blocks = nn.Sequential(
+                *[ConvMixer.ConvMixerLayer(hidden_dims, kernel_size, dilation=1) for _ in range(depth)]
+            )
+            
+        # tmp_dims = hidden_dims if self.gap_direction == "time" else length
+        tmp_dims = hidden_dims # 固定
+        num_classes = 5 # 固定
+        
+        self.classifier = nn.Sequential(
+            # nn.AdaptiveAvgPool1d(1),
+            # nn.Flatten(),
+            # nn.Linear(tmp_dims, num_classes),
+            nn.Conv1d(hidden_dims, out_channels=5, kernel_size=1),
+        )
+
+        return
+    
+    def forward(self, x):
+        # hidden_dims = 500
+        # tmp_dims = hidden_dims if True else 16633
+        # print(tmp_dims)
+        # exit()
+        
+        print('debug1: ', x.shape)
+        x = x.view(x.shape[0], -1, x.shape[-1])
+        print('debug2: ', x.shape)
+        x = self.frame_embedding(x)
+        print('debug3: ', x.shape)
+        
+        x = self.blocks(x)
+        print('debug6: ', x.shape)
+        # if self.gap_direction == "channel":
+        #     x = x.transpose(1, 2)
+        x = self.classifier(x)
+        print('debug7: ', x.shape)
+        print("")
+        # exit()
+        return x
+
+    # def calc_embedding_shape(self, input_shape, frame_length, hidden_dims): 
+    # def calc_embedding_shape(self, hidden_dims):
+    #     stride = (frame_length+1) // 2
+    #     length = math.floor((input_shape[-1] - frame_length) / stride + 1)
+    #     return (hidden_dims, length)
+
 class NetworkDNN(nn.Module):
     def __init__(self):
         super(NetworkDNN, self).__init__()
@@ -87,5 +222,8 @@ class NetworkCNN(nn.Module):
 
 
     def forward(self, x):
+        print("x.shape: ", x.shape)
+        print("")
+        # exit()
         return self.net(x)
     
